@@ -84,7 +84,7 @@ const AIChat = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed right-0 top-0 h-screen w-96 bg-white border-l border-border shadow-xl z-50 flex flex-col">
+    <div className="fixed right-0 top-0 h-screen w-96 bg-white border-l border-border shadow-xl z-[100] flex flex-col">
       <Card className="flex flex-col h-full border-0 rounded-none">
         <CardHeader className="border-b border-border flex-shrink-0">
           <div className="flex items-center justify-between">
