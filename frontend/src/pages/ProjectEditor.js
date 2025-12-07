@@ -128,7 +128,7 @@ const ProjectEditor = () => {
   return (
     <div className="h-screen flex flex-col bg-slate-900" data-testid="project-editor">
       {/* Header */}
-      <div className=\"bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between\">
+      <div className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className=\"flex items-center gap-4\">
           <Button variant=\"ghost\" size=\"sm\" onClick={() => navigate('/projects')} className=\"text-slate-300\">
             <Home className=\"h-4 w-4 mr-2\" />
