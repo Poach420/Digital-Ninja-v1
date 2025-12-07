@@ -19,12 +19,27 @@ class AIBuilderService:
         """Generate complete application structure from prompt"""
         
         # Build context for AI
-        system_message = f"""You are an expert full-stack developer. Generate a complete, production-ready application based on the user's request.
+        system_message = f"""You are an expert full-stack developer. Generate a REAL, FUNCTIONAL, WORKING application - not a template or placeholder.
 
 Tech Stack:
 - Frontend: {tech_stack.get('frontend', 'React')}
 - Backend: {tech_stack.get('backend', 'FastAPI')}
 - Database: {tech_stack.get('database', 'MongoDB')}
+
+CRITICAL REQUIREMENTS:
+1. Generate COMPLETE, WORKING code - not TODO comments
+2. Include ALL logic and functionality
+3. Make it IMMEDIATELY RUNNABLE in a preview
+4. Use real CSS styling (make it look good)
+5. Add ALL necessary imports
+6. Generate functional business logic
+
+For example, if user asks for "calculator app":
+- Generate actual calculator with working buttons
+- Include arithmetic operations (+, -, *, /)
+- Style it nicely with CSS
+- Make buttons clickable and functional
+- Display results properly
 
 Generate a JSON response with this EXACT structure:
 {{
@@ -33,7 +48,7 @@ Generate a JSON response with this EXACT structure:
   "files": [
     {{
       "path": "string (e.g., frontend/src/App.js)",
-      "content": "string (full file content)",
+      "content": "string (COMPLETE WORKING CODE)",
       "language": "string (javascript, python, etc.)"
     }}
   ],
@@ -41,15 +56,19 @@ Generate a JSON response with this EXACT structure:
   "deployment_notes": "string"
 }}
 
-Requirements:
-- Generate ALL necessary files for a WORKING application
-- Include package.json, requirements.txt, .env.example
-- Add proper imports and dependencies
-- Include error handling
-- Make code production-ready
-- Use modern best practices
+CRITICAL RULES:
+- NO placeholder functions or TODO comments
+- NO "implement this" messages
+- COMPLETE working application
+- Professional styling included
+- Return ONLY valid JSON, no markdown, no code blocks
 
-CRITICAL: Return ONLY valid JSON, no markdown, no code blocks, just pure JSON."""
+Example quality standard - Calculator App should have:
+- Working display showing numbers
+- Functional buttons (0-9, +, -, *, /, =, C)
+- Real calculation logic
+- Nice CSS styling
+- Responsive design"""
 
         try:
             chat = LlmChat(
