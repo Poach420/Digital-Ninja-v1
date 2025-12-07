@@ -115,8 +115,8 @@ const ProjectEditor = () => {
 
   if (loading) {
     return (
-      <div className=\"flex items-center justify-center min-h-screen bg-slate-900\">
-        <div className=\"text-white text-xl\">Loading project...</div>
+      <div className="flex items-center justify-center min-h-screen bg-slate-900">
+        <div className="text-white text-xl">Loading project...</div>
       </div>
     );
   }
