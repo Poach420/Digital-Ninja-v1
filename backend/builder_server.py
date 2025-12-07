@@ -173,6 +173,97 @@ async def login(credentials: UserLogin):
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+# ==================== GOOGLE OAUTH ENDPOINTS ====================
+
+@api_router.get("/auth/google")
+async def google_auth(request: Request):
+    """Initiate Google OAuth flow"""
+    # Get the frontend origin from the request
+    frontend_url = os.environ.get('FRONTEND_URL', request.headers.get('origin', 'http://localhost:3000'))
+    redirect_url = f"{frontend_url}/auth/callback"
+    
+    # Redirect to Emergent auth with the callback URL
+    auth_url = f"https://auth.emergentagent.com/?redirect={redirect_url}"
+    return {"auth_url": auth_url}
+
+@api_router.post("/auth/google/session")
+async def process_google_session(request: Request):
+    """Process Google OAuth session_id from Emergent Auth"""
+    import httpx
+    
+    # Get session_id from request header
+    session_id = request.headers.get("X-Session-ID")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Missing session_id")
+    
+    # Call Emergent backend to get user data
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_id},
+                timeout=10.0
+            )
+            response.raise_for_status()
+            user_data = response.json()
+        except Exception as e:
+            logger.error(f"Failed to get session data: {e}")
+            raise HTTPException(status_code=401, detail="Invalid session")
+    
+    # Check if user exists
+    existing_user = await db.users.find_one({"email": user_data["email"]}, {"_id": 0})
+    
+    if existing_user:
+        user_id = existing_user["user_id"]
+        # Update user data if needed
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {
+                "name": user_data.get("name", existing_user.get("name")),
+                "picture": user_data.get("picture", existing_user.get("picture"))
+            }}
+        )
+    else:
+        # Create new user
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        user_doc = {
+            "user_id": user_id,
+            "email": user_data["email"],
+            "name": user_data.get("name", ""),
+            "picture": user_data.get("picture", ""),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user_doc)
+    
+    # Store Emergent session token in database with 7-day expiry
+    session_token = user_data["session_token"]
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    await db.user_sessions.insert_one({
+        "user_id": user_id,
+        "session_token": session_token,
+        "expires_at": expires_at.isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Get user for response
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if isinstance(user_doc.get('created_at'), str):
+        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+    
+    user = User(**user_doc)
+    
+    # Create our own JWT token as well for compatibility
+    access_token = create_access_token(data={"user_id": user.user_id})
+    
+    return {
+        "access_token": access_token,
+        "session_token": session_token,
+        "user": user,
+        "token_type": "bearer"
+    }
+
+
 # ==================== AI BUILDER ENDPOINTS ====================
 
 @api_router.post("/projects/generate", response_model=Project)
