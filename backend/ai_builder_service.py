@@ -88,7 +88,7 @@ Return the JSON structure with complete code now."""
             logger.info(f"Generating app for prompt: {prompt}")
             
             response = await self.client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
