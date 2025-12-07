@@ -726,7 +726,7 @@ function App() {
       title: 'Welcome to My Blog',
       author: 'John Doe',
       date: '2024-01-15',
-      content: 'This is my first blog post. I\'m excited to share my thoughts with you!',
+      content: 'This is my first blog post. I am excited to share my thoughts with you!',
       comments: [
         { id: 1, author: 'Jane Smith', text: 'Great post!', date: '2024-01-16' }
       ]
