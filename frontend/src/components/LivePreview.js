@@ -28,6 +28,17 @@ const LivePreview = ({ files }) => {
         return;
       }
 
+      // Process App.js content to remove ES6 imports/exports
+      let processedAppJs = appJs.content;
+      
+      // Remove import statements
+      processedAppJs = processedAppJs.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');
+      processedAppJs = processedAppJs.replace(/import\s+['"].*?['"];?\s*/g, '');
+      
+      // Remove export default and export statements
+      processedAppJs = processedAppJs.replace(/export\s+default\s+/g, '');
+      processedAppJs = processedAppJs.replace(/export\s+/g, '');
+
       // Build HTML with inline React code
       const html = `
 <!DOCTYPE html>
@@ -81,7 +92,9 @@ const LivePreview = ({ files }) => {
 <body>
   <div id="root"></div>
   <script type="text/babel">
-    ${appJs.content}
+    const { useState, useEffect, useRef } = React;
+    
+    ${processedAppJs}
     
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
