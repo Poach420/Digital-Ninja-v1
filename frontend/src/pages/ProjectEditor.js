@@ -1,0 +1,224 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Editor from '@monaco-editor/react';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { toast } from 'sonner';
+import api from '../utils/api';
+import { Save, Download, Trash2, FolderTree, Code2, Home } from 'lucide-react';
+
+const ProjectEditor = () => {
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+  const [project, setProject] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileContent, setFileContent] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProject();
+  }, [projectId]);
+
+  const loadProject = async () => {
+    try {
+      const response = await api.get(`/projects/${projectId}`);
+      setProject(response.data);
+      if (response.data.files.length > 0) {
+        selectFile(response.data.files[0]);
+      }
+    } catch (error) {
+      toast.error('Failed to load project');
+      navigate('/projects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectFile = (file) => {
+    setSelectedFile(file);
+    setFileContent(file.content);
+  };
+
+  const handleSave = async () => {
+    if (!selectedFile) return;
+
+    setSaving(true);
+    try {
+      await api.put(`/projects/${projectId}/files`, {
+        path: selectedFile.path,
+        content: fileContent
+      });
+      
+      // Update local state
+      setProject(prev => ({
+        ...prev,
+        files: prev.files.map(f => 
+          f.path === selectedFile.path ? { ...f, content: fileContent } : f
+        )
+      }));
+      
+      toast.success('File saved successfully');
+    } catch (error) {
+      toast.error('Failed to save file');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await api.post(`/projects/${projectId}/export`);
+      
+      // Create downloadable package
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${project.name}-export.json`;
+      a.click();
+      
+      toast.success('Project exported successfully');
+    } catch (error) {
+      toast.error('Failed to export project');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+
+    try {
+      await api.delete(`/projects/${projectId}`);
+      toast.success('Project deleted');
+      navigate('/projects');
+    } catch (error) {
+      toast.error('Failed to delete project');
+    }
+  };
+
+  const getLanguage = (filename) => {
+    const ext = filename.split('.').pop();
+    const langMap = {
+      'js': 'javascript',
+      'jsx': 'javascript',
+      'ts': 'typescript',
+      'tsx': 'typescript',
+      'py': 'python',
+      'json': 'json',
+      'html': 'html',
+      'css': 'css',
+      'md': 'markdown',
+      'txt': 'plaintext'
+    };
+    return langMap[ext] || 'plaintext';
+  };
+
+  if (loading) {
+    return (
+      <div className=\"flex items-center justify-center min-h-screen bg-slate-900\">
+        <div className=\"text-white text-xl\">Loading project...</div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return null;
+  }
+
+  return (
+    <div className=\"h-screen flex flex-col bg-slate-900\" data-testid=\"project-editor\">
+      {/* Header */}
+      <div className=\"bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between\">
+        <div className=\"flex items-center gap-4\">
+          <Button variant=\"ghost\" size=\"sm\" onClick={() => navigate('/projects')} className=\"text-slate-300\">
+            <Home className=\"h-4 w-4 mr-2\" />
+            Projects
+          </Button>
+          <div className=\"h-6 w-px bg-slate-700\" />
+          <div>
+            <h1 className=\"text-xl font-heading font-bold text-white\">{project.name}</h1>
+            <p className=\"text-sm text-slate-400\">{project.description}</p>
+          </div>
+        </div>
+        
+        <div className=\"flex items-center gap-2\">
+          <Button variant=\"outline\" size=\"sm\" onClick={handleSave} disabled={saving} className=\"text-white border-slate-600\" data-testid=\"save-button\">
+            <Save className=\"h-4 w-4 mr-2\" />
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+          <Button variant=\"outline\" size=\"sm\" onClick={handleExport} className=\"text-white border-slate-600\" data-testid=\"export-button\">
+            <Download className=\"h-4 w-4 mr-2\" />
+            Export
+          </Button>
+          <Button variant=\"outline\" size=\"sm\" onClick={handleDelete} className=\"text-red-400 border-slate-600\" data-testid=\"delete-button\">
+            <Trash2 className=\"h-4 w-4 mr-2\" />
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Editor Area */}
+      <div className=\"flex-1 flex overflow-hidden\">
+        {/* File Tree */}
+        <div className=\"w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto\">
+          <div className=\"p-4 border-b border-slate-700\">
+            <div className=\"flex items-center gap-2 text-white font-medium\">
+              <FolderTree className=\"h-4 w-4\" />
+              <span>Files</span>
+            </div>
+          </div>
+          <div className=\"p-2\">
+            {project.files.map((file, idx) => (
+              <button
+                key={idx}
+                onClick={() => selectFile(file)}
+                className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                  selectedFile?.path === file.path
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-700'
+                }`}
+                data-testid={`file-${idx}`}
+              >
+                <Code2 className=\"h-3 w-3 inline mr-2\" />
+                {file.path}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Code Editor */}
+        <div className=\"flex-1 flex flex-col\">
+          {selectedFile ? (
+            <>
+              <div className=\"bg-slate-800 px-6 py-3 border-b border-slate-700\">
+                <p className=\"text-sm text-slate-300 font-mono\">{selectedFile.path}</p>
+              </div>
+              <div className=\"flex-1\">
+                <Editor
+                  height=\"100%\"
+                  language={getLanguage(selectedFile.path)}
+                  value={fileContent}
+                  onChange={(value) => setFileContent(value || '')}
+                  theme=\"vs-dark\"
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    lineNumbers: 'on',
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <div className=\"flex-1 flex items-center justify-center text-slate-400\">
+              <p>Select a file to edit</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectEditor;
