@@ -16,6 +16,7 @@ const ProjectEditor = () => {
   const [saving, setSaving] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showPreview, setShowPreview] = useState(true);
 
   useEffect(() => {
     loadProject();
