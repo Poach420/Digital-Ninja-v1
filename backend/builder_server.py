@@ -12,10 +12,10 @@ import os
 import uuid
 import logging
 
-from ai_builder_service import ai_builder
-
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+from ai_builder_service import ai_builder
 
 # MongoDB
 mongo_url = os.environ['MONGO_URL']
