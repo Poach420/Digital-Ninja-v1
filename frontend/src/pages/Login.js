@@ -31,13 +31,11 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const response = await api.get('/auth/google');
-      window.location.href = response.data.auth_url;
-    } catch (error) {
-      toast.error('Google login failed');
-    }
+  const handleGoogleLogin = () => {
+    // Use window.location.origin to dynamically determine redirect URL
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    window.location.href = authUrl;
   };
 
   return (
