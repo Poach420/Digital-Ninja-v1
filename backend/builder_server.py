@@ -313,6 +313,111 @@ async def export_project(project_id: str, current_user: User = Depends(get_curre
         "instructions": "Use GitHub export button to create repository"
     }
 
+# ==================== DEPLOYMENT ENDPOINTS ====================
+
+from deployment_service import deployment_service
+
+@api_router.post("/deployments/deploy")
+async def deploy_project(
+    deployment_request: Dict[str, Any],
+    current_user: User = Depends(get_current_user)
+):
+    """Deploy project to production infrastructure"""
+    project_id = deployment_request.get("project_id")
+    tier = deployment_request.get("tier", "free")
+    
+    # Get project
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Deploy
+    logger.info(f"Deploying project {project_id} for user {current_user.user_id}")
+    result = await deployment_service.deploy_full_stack(
+        project_id,
+        project['files'],
+        tier
+    )
+    
+    # Save deployment record
+    deployment_dict = {
+        **result,
+        "user_id": current_user.user_id,
+        "project_name": project['name']
+    }
+    await db.deployments.insert_one(deployment_dict)
+    
+    return result
+
+@api_router.get("/deployments")
+async def get_deployments(current_user: User = Depends(get_current_user)):
+    """Get all deployments for current user"""
+    deployments = await db.deployments.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).to_list(100)
+    return deployments
+
+@api_router.delete("/deployments/{deployment_id}")
+async def delete_deployment(deployment_id: str, current_user: User = Depends(get_current_user)):
+    """Delete a deployment"""
+    deployment = await db.deployments.find_one(
+        {"deployment_id": deployment_id, "user_id": current_user.user_id}
+    )
+    
+    if not deployment:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+    
+    # Delete from infrastructure
+    if deployment.get("frontend"):
+        await deployment_service.delete_deployment(
+            deployment["frontend"].get("deployment_id"),
+            "vercel"
+        )
+    
+    if deployment.get("backend"):
+        await deployment_service.delete_deployment(
+            deployment["backend"].get("service_id"),
+            "render"
+        )
+    
+    # Delete from database
+    await db.deployments.delete_one({"deployment_id": deployment_id})
+    
+    return {"message": "Deployment deleted"}
+
+# ==================== ADMIN DEPLOYMENT ENDPOINTS ====================
+
+@api_router.get("/admin/deployments")
+async def admin_get_all_deployments(current_user: User = Depends(get_current_user)):
+    """Get all deployments (admin only)"""
+    if current_user.role not in ["admin", "owner"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    deployments = await db.deployments.find({}, {"_id": 0}).to_list(1000)
+    return deployments
+
+@api_router.get("/admin/deployments/stats")
+async def admin_deployment_stats(current_user: User = Depends(get_current_user)):
+    """Get deployment statistics"""
+    if current_user.role not in ["admin", "owner"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    total = await db.deployments.count_documents({})
+    active = await db.deployments.count_documents({"status": "deployed"})
+    failed = await db.deployments.count_documents({"status": {"$in": ["failed", "backend_failed", "frontend_failed"]}})
+    
+    return {
+        "total_deployments": total,
+        "active_deployments": active,
+        "failed_deployments": failed,
+        "success_rate": round((active / total * 100) if total > 0 else 0, 1)
+    }
+
 # ==================== SETUP ====================
 
 app.include_router(api_router)
