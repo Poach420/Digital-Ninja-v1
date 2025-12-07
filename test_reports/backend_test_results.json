@@ -1,0 +1,112 @@
+{
+  "summary": {
+    "tests_run": 17,
+    "tests_passed": 17,
+    "success_rate": 100.0,
+    "timestamp": "2025-12-07T17:58:34.226464"
+  },
+  "results": [
+    {
+      "test": "User Registration",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.206487"
+    },
+    {
+      "test": "User Login",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.471413"
+    },
+    {
+      "test": "Get Current User",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.507669"
+    },
+    {
+      "test": "Google OAuth URL",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.579974"
+    },
+    {
+      "test": "Get Pages List",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.617718"
+    },
+    {
+      "test": "Create Page",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.663121"
+    },
+    {
+      "test": "Get Specific Page",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.695953"
+    },
+    {
+      "test": "Update Page",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.731799"
+    },
+    {
+      "test": "Delete Page",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.767646"
+    },
+    {
+      "test": "Get Current Team",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.846458"
+    },
+    {
+      "test": "Get Team Members",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.885766"
+    },
+    {
+      "test": "Invite Team Member",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.922959"
+    },
+    {
+      "test": "Get Billing Plans",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.955881"
+    },
+    {
+      "test": "Subscribe to Pro Plan",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:32.993221"
+    },
+    {
+      "test": "AI Chat Message",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-12-07T17:58:34.059070"
+    },
+    {
+      "test": "Get System Diagnostics",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:34.188772"
+    },
+    {
+      "test": "Get All Users (Admin)",
+      "success": true,
+      "details": "Status: 200, Expected: 200",
+      "timestamp": "2025-12-07T17:58:34.225546"
+    }
+  ]
+}
