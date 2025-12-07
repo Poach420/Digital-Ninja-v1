@@ -189,10 +189,8 @@ metadata:
   test_sequence: 2
 
 test_plan:
-  current_focus:
-    - "Google OAuth authentication flow"
-  stuck_tasks: 
-    - "Google OAuth authentication flow"
+  current_focus: []
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
