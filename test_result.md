@@ -172,11 +172,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Login functionality"
-    - "Projects dashboard navigation"
-    - "Project editor with Monaco and live preview"
     - "Live preview functionality"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Live preview functionality"
   test_all: false
   test_priority: "high_first"
 
