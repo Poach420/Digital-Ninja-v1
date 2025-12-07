@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: digitalninja_mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: changeme
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - digitalninja
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: digitalninja_backend
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGO_URL=mongodb://admin:changeme@mongodb:27017
+      - DB_NAME=digital_ninja_db
+      - CORS_ORIGINS=http://localhost:3000
+      - JWT_SECRET=your-super-secret-jwt-key
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRATION_HOURS=72
+      - EMERGENT_LLM_KEY=sk-emergent-76924Ca13Fe786dC7E
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your_email@gmail.com
+      - SMTP_PASSWORD=your_gmail_app_password
+      - SMTP_FROM=Digital Ninja <noreply@digitalninja.app>
+      - PEACH_PAYMENTS_MERCHANT_ID=test_merchant_id
+      - PEACH_PAYMENTS_API_KEY=test_api_key
+      - PEACH_PAYMENTS_MODE=test
+      - ALLOWED_IPS=*
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongodb
+    networks:
+      - digitalninja
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: digitalninja_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8001
+    depends_on:
+      - backend
+    networks:
+      - digitalninja
+
+volumes:
+  mongodb_data:
+
+networks:
+  digitalninja:
+    driver: bridge
