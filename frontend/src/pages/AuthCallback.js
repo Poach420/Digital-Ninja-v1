@@ -21,10 +21,8 @@ const AuthCallback = () => {
         }
 
         // Call backend to process session
-        const response = await api.post('/auth/google/session', {}, {
-          headers: {
-            'X-Session-ID': sessionId
-          }
+        const response = await api.post('/auth/google/session', {
+          session_id: sessionId
         });
 
         // Store tokens and user data
