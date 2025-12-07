@@ -157,41 +157,93 @@ This application was generated using AI-powered code generation.
             },
             {
                 "path": "frontend/src/App.js",
-                "content": """import React, { useState, useEffect } from 'react';
+                "content": """import React, { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [display, setDisplay] = useState('0');
+  const [previousValue, setPreviousValue] = useState(null);
+  const [operation, setOperation] = useState(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const inputDigit = (digit) => {
+    if (waitingForOperand) {
+      setDisplay(String(digit));
+      setWaitingForOperand(false);
+    } else {
+      setDisplay(display === '0' ? String(digit) : display + digit);
+    }
+  };
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch('/api/data');
-      const result = await response.json();
-      setData(result);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
+  const inputDecimal = () => {
+    if (waitingForOperand) {
+      setDisplay('0.');
+      setWaitingForOperand(false);
+    } else if (display.indexOf('.') === -1) {
+      setDisplay(display + '.');
+    }
+  };
+
+  const clear = () => {
+    setDisplay('0');
+    setPreviousValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
+  };
+
+  const performOperation = (nextOperation) => {
+    const inputValue = parseFloat(display);
+
+    if (previousValue === null) {
+      setPreviousValue(inputValue);
+    } else if (operation) {
+      const currentValue = previousValue || 0;
+      const newValue = calculate(currentValue, inputValue, operation);
+      setDisplay(String(newValue));
+      setPreviousValue(newValue);
+    }
+
+    setWaitingForOperand(true);
+    setOperation(nextOperation);
+  };
+
+  const calculate = (firstValue, secondValue, operation) => {
+    switch (operation) {
+      case '+': return firstValue + secondValue;
+      case '-': return firstValue - secondValue;
+      case '*': return firstValue * secondValue;
+      case '/': return firstValue / secondValue;
+      case '=': return secondValue;
+      default: return secondValue;
     }
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Generated Application</h1>
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <div>
-            <p>Application is running!</p>
+    <div className="calculator">
+      <div className="calculator-display">{display}</div>
+      <div className="calculator-keypad">
+        <div className="input-keys">
+          <div className="function-keys">
+            <button className="calculator-key key-clear" onClick={clear}>AC</button>
+            <button className="calculator-key key-sign" onClick={() => setDisplay(String(parseFloat(display) * -1))}>\u00B1</button>
+            <button className="calculator-key key-percent" onClick={() => setDisplay(String(parseFloat(display) / 100))}>%</button>
           </div>
-        )}
-      </header>
+          <div className="digit-keys">
+            <button className="calculator-key key-0" onClick={() => inputDigit(0)}>0</button>
+            <button className="calculator-key key-dot" onClick={inputDecimal}>\u25CF</button>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+              <button key={num} className="calculator-key" onClick={() => inputDigit(num)}>{num}</button>
+            ))}
+          </div>
+        </div>
+        <div className="operator-keys">
+          <button className="calculator-key key-divide" onClick={() => performOperation('/')}>\u00F7</button>
+          <button className="calculator-key key-multiply" onClick={() => performOperation('*')}>\u00D7</button>
+          <button className="calculator-key key-subtract" onClick={() => performOperation('-')}>-</button>
+          <button className="calculator-key key-add" onClick={() => performOperation('+')}>+</button>
+          <button className="calculator-key key-equals" onClick={() => performOperation('=')}>=</button>
+        </div>
+      </div>
     </div>
   );
 }
