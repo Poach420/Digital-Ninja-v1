@@ -378,6 +378,13 @@ async def get_diagnostics(current_user: User = Depends(get_current_admin)):
     checks.append(DiagnosticCheck(check_type="ai", status="healthy" if ai_configured else "unhealthy", last_check=datetime.now(timezone.utc), details="AI chat assistant status"))
     return checks
 
+# Import CRM, Blog, Landing Pages, SMTP, PDF extensions
+try:
+    from routes_extensions import ext_router
+    app.include_router(ext_router)
+except ImportError as e:
+    logger.warning(f"Extensions not loaded: {e}")
+
 app.include_router(api_router)
 app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','), allow_methods=["*"], allow_headers=["*"])
 
