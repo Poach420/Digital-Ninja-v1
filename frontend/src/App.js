@@ -14,16 +14,13 @@ import { Toaster } from './components/ui/sonner';
 import './App.css';
 
 function App() {
-  if (window.location.hash && window.location.hash.includes('session_id=')) {
-    return <AuthCallback />;
-  }
-
   return (
     <BrowserRouter>
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/builder" element={<ProtectedRoute><PageBuilder /></ProtectedRoute>} />
