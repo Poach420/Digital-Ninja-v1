@@ -254,19 +254,115 @@ export default App;
             },
             {
                 "path": "frontend/src/App.css",
-                "content": """.App {
-  text-align: center;
+                "content": """* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.App-header {
-  background-color: #282c34;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.calculator {
+  width: 320px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.calculator-display {
+  background: #222;
+  color: #fff;
+  font-size: 48px;
+  padding: 30px 20px;
+  text-align: right;
+  font-weight: 300;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.calculator-keypad {
+  display: flex;
+}
+
+.input-keys {
+  flex: 3;
+}
+
+.function-keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.digit-keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    "key-1 key-2 key-3"
+    "key-4 key-5 key-6"
+    "key-7 key-8 key-9"
+    "key-0 key-0 key-dot";
+}
+
+.calculator-key {
+  border: none;
+  background: #f0f0f0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 400;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.calculator-key:hover {
+  background: #e0e0e0;
+}
+
+.calculator-key:active {
+  background: #d0d0d0;
+}
+
+.key-0 {
+  grid-area: key-0;
+}
+
+.function-keys .calculator-key {
+  background: #e0e0e0;
+  color: #666;
+}
+
+.operator-keys {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+}
+
+.operator-keys .calculator-key {
+  background: #ff9500;
+  color: #fff;
+  font-size: 28px;
+  border-right: none;
+}
+
+.operator-keys .calculator-key:hover {
+  background: #ff8000;
+}
+
+.key-equals {
+  flex: 1;
+  background: #ff9500 !important;
 }
 """,
                 "language": "css"
