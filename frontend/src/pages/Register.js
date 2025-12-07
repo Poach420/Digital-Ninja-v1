@@ -24,7 +24,7 @@ const Register = () => {
       localStorage.setItem('token', response.data.access_token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate('/projects');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
     } finally {
