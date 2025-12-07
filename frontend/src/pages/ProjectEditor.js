@@ -136,6 +136,11 @@ const ProjectEditor = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="text-white border-slate-600" data-testid="toggle-preview">
+            {showPreview ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+            {showPreview ? 'Hide' : 'Show'} Preview
+          </Button>
+          <div className="h-6 w-px bg-slate-700" />
           <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="text-white border-slate-600" data-testid="save-button">
             <Save className="h-4 w-4 mr-2" />{saving ? 'Saving...' : 'Save'}
           </Button>
