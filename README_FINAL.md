@@ -24,7 +24,7 @@
 
 ## 🚀 LIVE STAGING
 
-**URL:** https://ninja-hub-builder.preview.emergentagent.com
+**URL:** https://ai-app-forge-8.preview.emergentagent.com
 
 **Test Account:**
 - Email: demo@test.com  
@@ -231,17 +231,17 @@ Track per deployment:
 
 ```bash
 # 1. Register user
-curl -X POST https://ninja-hub-builder.preview.emergentagent.com/api/auth/register \
+curl -X POST https://ai-app-forge-8.preview.emergentagent.com/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","email":"test@email.com","password":"test123"}'
 
 # 2. Login and get token
-TOKEN=$(curl -s -X POST https://ninja-hub-builder.preview.emergentagent.com/api/auth/login \
+TOKEN=$(curl -s -X POST https://ai-app-forge-8.preview.emergentagent.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@email.com","password":"test123"}' | jq -r '.access_token')
 
 # 3. Generate project
-curl -X POST https://ninja-hub-builder.preview.emergentagent.com/api/projects/generate \
+curl -X POST https://ai-app-forge-8.preview.emergentagent.com/api/projects/generate \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -254,7 +254,7 @@ curl -X POST https://ninja-hub-builder.preview.emergentagent.com/api/projects/ge
   }'
 
 # 4. Deploy project (requires your infrastructure tokens)
-curl -X POST https://ninja-hub-builder.preview.emergentagent.com/api/deployments/deploy \
+curl -X POST https://ai-app-forge-8.preview.emergentagent.com/api/deployments/deploy \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"project_id": "proj_abc123", "tier": "free"}'
