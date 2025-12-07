@@ -168,6 +168,18 @@ frontend:
         agent: "testing"
         comment: "✅ FIXED: Live preview now works perfectly! Generated new calculator app and verified: 1) Monaco editor shows React code on left, 2) Live preview iframe renders calculator UI on right with 19 interactive buttons, 3) Calculator functionality works (tested 2+3=5 and 7*8=56), 4) No 'exports is not defined' error in console, 5) LivePreview component successfully strips ES6 imports/exports and adds React hook destructuring. The fixes to LivePreview.js resolved the module loading issues."
 
+  - task: "Google OAuth authentication flow"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/Login.js, /app/frontend/src/pages/AuthCallback.js, /app/backend/builder_server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ PARTIAL WORKING: Google OAuth flow works correctly up to Google's authentication page. ✅ Frontend: Google button redirects to Emergent Auth (auth.emergentagent.com), then to Google sign-in (accounts.google.com). ✅ Backend: /api/auth/google/session endpoint exists and responds. ❌ CRITICAL ISSUE: Emergent backend session-data endpoint (https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data) returns 404 Not Found, preventing session processing after Google authentication. This breaks the complete OAuth flow after user signs in with Google."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
