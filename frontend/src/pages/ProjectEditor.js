@@ -129,45 +129,45 @@ const ProjectEditor = () => {
     <div className="h-screen flex flex-col bg-slate-900" data-testid="project-editor">
       {/* Header */}
       <div className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
-        <div className=\"flex items-center gap-4\">
-          <Button variant=\"ghost\" size=\"sm\" onClick={() => navigate('/projects')} className=\"text-slate-300\">
-            <Home className=\"h-4 w-4 mr-2\" />
+        <div  className="flex items-center gap-4\">
+          <Button variant=\"ghost\" size=\"sm\" onClick={() => navigate('/projects')}  className="text-slate-300\">
+            <Home  className="h-4 w-4 mr-2\" />
             Projects
           </Button>
-          <div className=\"h-6 w-px bg-slate-700\" />
+          <div  className="h-6 w-px bg-slate-700\" />
           <div>
-            <h1 className=\"text-xl font-heading font-bold text-white\">{project.name}</h1>
-            <p className=\"text-sm text-slate-400\">{project.description}</p>
+            <h1  className="text-xl font-heading font-bold text-white\">{project.name}</h1>
+            <p  className="text-sm text-slate-400\">{project.description}</p>
           </div>
         </div>
         
-        <div className=\"flex items-center gap-2\">
-          <Button variant=\"outline\" size=\"sm\" onClick={handleSave} disabled={saving} className=\"text-white border-slate-600\" data-testid=\"save-button\">
-            <Save className=\"h-4 w-4 mr-2\" />
+        <div  className="flex items-center gap-2\">
+          <Button variant=\"outline\" size=\"sm\" onClick={handleSave} disabled={saving}  className="text-white border-slate-600\" data-testid=\"save-button\">
+            <Save  className="h-4 w-4 mr-2\" />
             {saving ? 'Saving...' : 'Save'}
           </Button>
-          <Button variant=\"outline\" size=\"sm\" onClick={handleExport} className=\"text-white border-slate-600\" data-testid=\"export-button\">
-            <Download className=\"h-4 w-4 mr-2\" />
+          <Button variant=\"outline\" size=\"sm\" onClick={handleExport}  className="text-white border-slate-600\" data-testid=\"export-button\">
+            <Download  className="h-4 w-4 mr-2\" />
             Export
           </Button>
-          <Button variant=\"outline\" size=\"sm\" onClick={handleDelete} className=\"text-red-400 border-slate-600\" data-testid=\"delete-button\">
-            <Trash2 className=\"h-4 w-4 mr-2\" />
+          <Button variant=\"outline\" size=\"sm\" onClick={handleDelete}  className="text-red-400 border-slate-600\" data-testid=\"delete-button\">
+            <Trash2  className="h-4 w-4 mr-2\" />
             Delete
           </Button>
         </div>
       </div>
 
       {/* Main Editor Area */}
-      <div className=\"flex-1 flex overflow-hidden\">
+      <div  className="flex-1 flex overflow-hidden\">
         {/* File Tree */}
-        <div className=\"w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto\">
-          <div className=\"p-4 border-b border-slate-700\">
-            <div className=\"flex items-center gap-2 text-white font-medium\">
-              <FolderTree className=\"h-4 w-4\" />
+        <div  className="w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto\">
+          <div  className="p-4 border-b border-slate-700\">
+            <div  className="flex items-center gap-2 text-white font-medium\">
+              <FolderTree  className="h-4 w-4\" />
               <span>Files</span>
             </div>
           </div>
-          <div className=\"p-2\">
+          <div  className="p-2\">
             {project.files.map((file, idx) => (
               <button
                 key={idx}
@@ -179,7 +179,7 @@ const ProjectEditor = () => {
                 }`}
                 data-testid={`file-${idx}`}
               >
-                <Code2 className=\"h-3 w-3 inline mr-2\" />
+                <Code2  className="h-3 w-3 inline mr-2\" />
                 {file.path}
               </button>
             ))}
@@ -187,13 +187,13 @@ const ProjectEditor = () => {
         </div>
 
         {/* Code Editor */}
-        <div className=\"flex-1 flex flex-col\">
+        <div  className="flex-1 flex flex-col\">
           {selectedFile ? (
             <>
-              <div className=\"bg-slate-800 px-6 py-3 border-b border-slate-700\">
-                <p className=\"text-sm text-slate-300 font-mono\">{selectedFile.path}</p>
+              <div  className="bg-slate-800 px-6 py-3 border-b border-slate-700\">
+                <p  className="text-sm text-slate-300 font-mono\">{selectedFile.path}</p>
               </div>
-              <div className=\"flex-1\">
+              <div  className="flex-1\">
                 <Editor
                   height=\"100%\"
                   language={getLanguage(selectedFile.path)}
@@ -211,7 +211,7 @@ const ProjectEditor = () => {
               </div>
             </>
           ) : (
-            <div className=\"flex-1 flex items-center justify-center text-slate-400\">
+            <div  className="flex-1 flex items-center justify-center text-slate-400\">
               <p>Select a file to edit</p>
             </div>
           )}
