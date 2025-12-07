@@ -1,38 +1,59 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import api from '../utils/api';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const hash = window.location.hash;
-      const params = new URLSearchParams(hash.substring(1));
-      const sessionId = params.get('session_id');
-
-      if (!sessionId) {
-        navigate('/login');
-        return;
-      }
-
+    const processAuth = async () => {
       try {
-        const response = await api.post('/auth/google/callback', { session_id: sessionId });
+        // Get session_id from URL hash
+        const hash = window.location.hash;
+        const params = new URLSearchParams(hash.substring(1));
+        const sessionId = params.get('session_id');
+
+        if (!sessionId) {
+          toast.error('Authentication failed - no session ID');
+          navigate('/login');
+          return;
+        }
+
+        // Call backend to process session
+        const response = await api.post('/auth/google/session', {}, {
+          headers: {
+            'X-Session-ID': sessionId
+          }
+        });
+
+        // Store tokens and user data
         localStorage.setItem('token', response.data.access_token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        navigate('/dashboard', { replace: true });
+        
+        // Set flag to skip delay in ProtectedRoute
+        sessionStorage.setItem('just_authenticated', 'true');
+
+        toast.success('Welcome!');
+        
+        // Redirect to projects dashboard
+        navigate('/projects', { replace: true });
       } catch (error) {
-        console.error('OAuth callback error:', error);
+        console.error('Auth callback error:', error);
+        toast.error('Authentication failed');
         navigate('/login');
       }
     };
 
-    handleCallback();
+    processAuth();
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-lg">Completing authentication...</div>
+    <div className="flex items-center justify-center min-h-screen bg-slate-900">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <p className="text-white mt-4">Completing sign in...</p>
+      </div>
     </div>
   );
 };
