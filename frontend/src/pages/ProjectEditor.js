@@ -168,18 +168,25 @@ const ProjectEditor = () => {
             ))}
           </div>
         </div>
-        <div className="flex-1 flex flex-col">
-          {selectedFile ? (
-            <>
-              <div className="bg-slate-800 px-6 py-3 border-b border-slate-700">
-                <p className="text-sm text-slate-300 font-mono">{selectedFile.path}</p>
-              </div>
-              <div className="flex-1">
-                <Editor height="100%" language={getLanguage(selectedFile.path)} value={fileContent} onChange={(value) => setFileContent(value || '')} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 14, lineNumbers: 'on', scrollBeyondLastLine: false, automaticLayout: true }} />
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-slate-400">Select a file to edit</div>
+        <div className={`flex-1 flex ${showPreview ? 'flex-row' : 'flex-col'}`}>
+          <div className={`flex flex-col ${showPreview ? 'w-1/2 border-r border-slate-700' : 'flex-1'}`}>
+            {selectedFile ? (
+              <>
+                <div className="bg-slate-800 px-6 py-3 border-b border-slate-700">
+                  <p className="text-sm text-slate-300 font-mono">{selectedFile.path}</p>
+                </div>
+                <div className="flex-1">
+                  <Editor height="100%" language={getLanguage(selectedFile.path)} value={fileContent} onChange={(value) => setFileContent(value || '')} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 14, lineNumbers: 'on', scrollBeyondLastLine: false, automaticLayout: true }} />
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-slate-400">Select a file to edit</div>
+            )}
+          </div>
+          {showPreview && (
+            <div className="w-1/2">
+              <LivePreview files={project.files} />
+            </div>
           )}
         </div>
       </div>
