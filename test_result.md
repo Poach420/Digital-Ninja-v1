@@ -183,3 +183,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "Starting comprehensive testing of AI Application Builder. Will test login, projects dashboard, and all 3 generated apps (Calculator ID: proj_7878a760ecd4, Todo ID: proj_62b2af22731a, Blog ID: proj_85eb880becc9) in the live preview."
+  - agent: "testing"
+    message: "TESTING COMPLETE: ✅ Login, Projects Dashboard, and Project Editor all working correctly. ❌ CRITICAL ISSUE: Live Preview has JavaScript 'exports is not defined' error preventing React apps from rendering. The AI-generated React code is valid but LivePreview component has module loading issues. Backend logs show OpenAI API model 'gpt-4-turbo-preview' not found, but projects were still created with proper React code structure."
