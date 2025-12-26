@@ -480,6 +480,8 @@ async def export_to_github(
     # Return cleaned project structure
     return {
         "project_name": project['name'],
+        "files": cleaned_files
+    }
 
 
 # ==================== CHAT ENDPOINT ====================
