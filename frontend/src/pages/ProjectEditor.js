@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import api from '../utils/api';
 import LivePreview from '../components/LivePreview';
-import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff } from 'lucide-react';
+import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff, Github } from 'lucide-react';
 
 const ProjectEditor = () => {
   const { projectId } = useParams();
