@@ -255,10 +255,17 @@ const Builder = () => {
 
       {/* Generation Logger Modal */}
       {showLogger && (
-        <GenerationLogger
-          projectId={currentProjectId}
-          onComplete={handleGenerationComplete}
-        />
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="max-w-2xl w-full">
+            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+              <h2 className="text-2xl font-bold text-white mb-4">Building Your App...</h2>
+              <GenerationLogger
+                projectId={currentProjectId}
+                onComplete={handleGenerationComplete}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
