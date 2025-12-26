@@ -423,6 +423,94 @@ async def rollback_to_version(
         {"$set": {"files": version["files"]}}
     )
     
+
+
+# ==================== TEAM COLLABORATION ====================
+
+class TeamMember(BaseModel):
+    member_id: str
+    project_id: str
+    user_email: str
+    role: str  # admin, editor, viewer
+    invited_at: datetime
+    invited_by: str
+
+@api_router.post("/projects/{project_id}/team/invite")
+async def invite_team_member(
+    project_id: str,
+    email: EmailStr,
+    role: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Invite a team member to a project"""
+    
+    # Verify project ownership
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or not authorized")
+    
+    # Check if already invited
+    existing = await db.team_members.find_one({
+        "project_id": project_id,
+        "user_email": email
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="User already invited")
+    
+    # Create invitation
+    member = {
+        "member_id": f"mem_{uuid.uuid4().hex[:12]}",
+        "project_id": project_id,
+        "user_email": email,
+        "role": role,
+        "invited_at": datetime.now(timezone.utc).isoformat(),
+        "invited_by": current_user.user_id,
+        "status": "pending"
+    }
+    
+    await db.team_members.insert_one(member)
+    
+    return {"message": f"Invitation sent to {email}", "member": member}
+
+@api_router.get("/projects/{project_id}/team")
+async def get_team_members(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get all team members for a project"""
+    
+    members = await db.team_members.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).to_list(100)
+    
+    return members
+
+@api_router.delete("/projects/{project_id}/team/{member_id}")
+async def remove_team_member(
+    project_id: str,
+    member_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Remove a team member from a project"""
+    
+    # Verify ownership
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": current_user.user_id}
+    )
+    
+    if not project:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.team_members.delete_one({"member_id": member_id})
+    
+    return {"message": "Team member removed"}
+
     return {"message": "Rolled back successfully", "version_number": version["version_number"]}
 
     # Update file content
