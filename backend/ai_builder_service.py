@@ -205,6 +205,75 @@ Return the JSON structure with complete code now."""
 
 This application was generated using AI-powered code generation.
 """
+
+    def _add_deployment_configs(self, app_structure: Dict, tech_stack: Dict):
+        """Add deployment configuration files"""
+        
+        # Add vercel.json for frontend deployment
+        if not any(f['path'] == 'vercel.json' for f in app_structure['files']):
+            vercel_config = {
+                "version": 2,
+                "builds": [
+                    {"src": "package.json", "use": "@vercel/static-build", "config": {"distDir": "build"}}
+                ],
+                "routes": [
+                    {"src": "/static/(.*)", "dest": "/static/$1"},
+                    {"src": "/(.*)", "dest": "/index.html"}
+                ]
+            }
+            app_structure['files'].append({
+                "path": "vercel.json",
+                "content": json.dumps(vercel_config, indent=2),
+                "language": "json"
+            })
+        
+        # Add .env.example
+        if not any(f['path'] == '.env.example' for f in app_structure['files']):
+            app_structure['files'].append({
+                "path": ".env.example",
+                "content": "REACT_APP_API_URL=http://localhost:8001\n",
+                "language": "text"
+            })
+        
+        # Add .gitignore
+        if not any(f['path'] == '.gitignore' for f in app_structure['files']):
+            gitignore = """# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.Python
+env/
+venv/
+
+# Environment variables
+.env
+.env.local
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+"""
+            app_structure['files'].append({
+                "path": ".gitignore",
+                "content": gitignore,
+                "language": "text"
+            })
+
     
     def _get_fallback_for_prompt(self, prompt: str, tech_stack: Dict) -> Dict:
         """Intelligent fallback based on prompt keywords"""
