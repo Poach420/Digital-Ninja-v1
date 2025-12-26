@@ -216,7 +216,7 @@ const Builder = () => {
                 <Button
                   onClick={handleChat}
                   disabled={chatting || !prompt.trim()}
-                  className="h-20 px-6 bg-[#ff4500] hover:bg-[#ff5722] text-white font-semibold disabled:opacity-50"
+                  className="h-20 px-6 bg-gradient-to-r from-[#9b00e8] to-[#ff4500] hover:from-[#8800d4] hover:to-[#e63e00] text-white font-semibold disabled:opacity-50 rounded-xl shadow-lg transition-all"
                 >
                   {chatting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
