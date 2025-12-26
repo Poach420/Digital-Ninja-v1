@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: digital-ninja-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn builder_server:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
