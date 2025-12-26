@@ -252,6 +252,14 @@ const Builder = () => {
           </div>
         )}
       </div>
+
+      {/* Generation Logger Modal */}
+      {showLogger && (
+        <GenerationLogger
+          projectId={currentProjectId}
+          onComplete={handleGenerationComplete}
+        />
+      )}
     </div>
   );
 };
