@@ -475,6 +475,61 @@ async def export_to_github(
     # Return cleaned project structure
     return {
         "project_name": project['name'],
+
+
+# ==================== CHAT ENDPOINT ====================
+
+class ChatMessage(BaseModel):
+    message: str
+    history: List[Dict[str, str]] = []
+
+@api_router.post("/chat")
+async def chat_with_gpt(request: ChatMessage, current_user: User = Depends(get_current_user)):
+    """Chat with GPT-4 for debugging and improvements"""
+    import httpx
+    
+    openai_key = os.getenv("OPENAI_API_KEY")
+    if not openai_key:
+        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    
+    try:
+        # Build messages for GPT-4
+        messages = [
+            {"role": "system", "content": "You are a helpful AI assistant specialized in app development, debugging, and code improvements. Provide clear, actionable advice."}
+        ]
+        
+        # Add history
+        for msg in request.history[-10:]:  # Last 10 messages for context
+            messages.append({"role": msg["role"], "content": msg["content"]})
+        
+        # Add current message
+        messages.append({"role": "user", "content": request.message})
+        
+        # Call OpenAI API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {openai_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "gpt-4o",
+                    "messages": messages,
+                    "temperature": 0.7,
+                    "max_tokens": 1000
+                },
+                timeout=30.0
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+        return {"response": data["choices"][0]["message"]["content"]}
+        
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get chat response")
+
         "description": project.get('description', ''),
         "files": cleaned_files,
         "ready_for_export": True,
