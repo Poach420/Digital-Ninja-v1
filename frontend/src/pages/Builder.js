@@ -48,11 +48,13 @@ const Builder = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Sparkles className="w-10 h-10 text-purple-400" />
-            <h1 className="text-5xl font-bold text-white">Base44 AI Builder</h1>
+            <div className="w-12 h-12 bg-[#ff4500] rounded-lg flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-5xl font-bold text-white">Digital Ninja App Builder</h1>
           </div>
           <p className="text-xl text-gray-300">
-            Describe your app in natural language. Get production-ready code instantly.
+            Describe your app idea. Get production-ready code instantly.
           </p>
           <p className="text-sm text-gray-400 mt-2">
             Powered by GPT-4 • Deploy to Vercel & Render • Export to GitHub
