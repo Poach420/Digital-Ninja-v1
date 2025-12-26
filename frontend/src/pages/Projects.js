@@ -18,15 +18,29 @@ const Projects = () => {
   }, []);
 
   const loadProjects = async () => {
+    console.log('Loading projects...');
     try {
       const response = await api.get('/projects');
+      console.log('Projects loaded:', response.data.length);
       setProjects(response.data);
     } catch (error) {
+      console.error('Failed to load projects:', error);
       toast.error('Failed to load projects');
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#1c1c1e]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff4500]"></div>
+          <p className="text-white mt-4 text-lg">Loading your projects...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('token');
