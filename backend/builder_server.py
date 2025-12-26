@@ -558,6 +558,28 @@ async def delete_deployment(deployment_id: str, current_user: User = Depends(get
     )
     
     if not deployment:
+
+
+# ==================== HEALTH CHECK ====================
+
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "ok",
+        "service": "Digital Ninja App Builder",
+        "version": "1.0.0"
+    }
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Digital Ninja App Builder API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
+
         raise HTTPException(status_code=404, detail="Deployment not found")
     
     # Delete from infrastructure
