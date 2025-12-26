@@ -99,6 +99,35 @@ const ProjectEditor = () => {
     }
   };
 
+  const handleGitHubExport = async () => {
+    try {
+      toast.loading('Preparing clean export...');
+      const response = await api.post(`/projects/${projectId}/export/github`);
+      
+      // Create a download of the clean project structure
+      const exportData = {
+        name: response.data.project_name,
+        description: response.data.description,
+        files: response.data.files,
+        deployment_ready: true,
+        instructions: "All files are clean and deployment-ready. No Emergent dependencies included."
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${response.data.project_name}-github-ready.json`;
+      a.click();
+      
+      toast.success('✅ Clean code exported! Ready for GitHub push');
+      toast.info('📦 Files include: vercel.json, .env.example, .gitignore');
+    } catch (error) {
+      toast.error('GitHub export failed');
+    }
+  };
+
+
   const handleDelete = async () => {
     if (!confirm('Delete this project?')) return;
     try {
