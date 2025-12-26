@@ -287,8 +287,14 @@ npm-debug.log*
             return self._get_todo_template()
         elif any(word in prompt_lower for word in ['blog', 'post', 'article', 'comment']):
             return self._get_blog_template()
+        elif any(word in prompt_lower for word in ['medicine', 'health', 'wellness', 'natural', 'healing', 'therapy']):
+            return self._get_natural_medicine_template()
+        elif any(word in prompt_lower for word in ['weather', 'forecast', 'temperature', 'climate']):
+            return self._get_weather_template()
+        elif any(word in prompt_lower for word in ['website', 'landing', 'homepage', 'portfolio']):
+            return self._get_website_template()
         else:
-            # Generic fallback
+            # Generic fallback - return calculator
             return self._get_calculator_template()
     
     def _get_calculator_template(self) -> Dict:
