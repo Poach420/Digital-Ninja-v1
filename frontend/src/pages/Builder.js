@@ -115,10 +115,10 @@ const Builder = () => {
         <div className="flex justify-center gap-4 mb-6">
           <Button
             onClick={() => setMode('build')}
-            className={`h-12 px-8 font-semibold ${
+            className={`h-12 px-8 font-semibold transition-all ${
               mode === 'build'
-                ? 'bg-[#ff4500] text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'bg-gradient-to-r from-[#9b00e8] to-[#ff4500] text-white shadow-lg shadow-[#9b00e8]/50'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
             }`}
           >
             <Sparkles className="w-5 h-5 mr-2" />
@@ -126,10 +126,10 @@ const Builder = () => {
           </Button>
           <Button
             onClick={() => setMode('chat')}
-            className={`h-12 px-8 font-semibold ${
+            className={`h-12 px-8 font-semibold transition-all ${
               mode === 'chat'
-                ? 'bg-[#ff4500] text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'bg-gradient-to-r from-[#9b00e8] to-[#ff4500] text-white shadow-lg shadow-[#9b00e8]/50'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
             }`}
           >
             <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
