@@ -98,16 +98,25 @@ const Builder = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-[#ff4500] rounded-lg flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-white" />
+            <div className="w-14 h-14 bg-gradient-to-br from-[#9b00e8] to-[#ff4500] rounded-2xl flex items-center justify-center shadow-lg shadow-[#9b00e8]/50 animate-pulse-slow">
+              <Sparkles className="w-8 h-8 text-white" strokeWidth={2.5} />
             </div>
-            <h1 className="text-5xl font-bold text-white">Digital Ninja App Builder</h1>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-[#9b00e8] via-[#ff4500] to-[#9b00e8] bg-clip-text text-transparent animate-gradient">
+              Digital Ninja App Builder
+            </h1>
           </div>
-          <p className="text-xl text-gray-300">
+          <p className="text-xl text-gray-300 font-medium">
             Describe your app idea. Get production-ready code instantly.
           </p>
-          <p className="text-sm text-gray-400 mt-2">
-            Powered by GPT-4 • Deploy to Vercel & Render • Export to GitHub
+          <p className="text-sm text-gray-400 mt-2 flex items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Powered by GPT-4
+            </span>
+            <span className="text-gray-600">•</span>
+            <span>Deploy to Vercel & Render</span>
+            <span className="text-gray-600">•</span>
+            <span>Export to GitHub</span>
           </p>
         </div>
 
