@@ -338,6 +338,93 @@ async def update_file(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
+
+
+# ==================== VERSION HISTORY ====================
+
+class ProjectVersion(BaseModel):
+    version_id: str
+    project_id: str
+    version_number: int
+    files: List[Dict[str, Any]]
+    created_at: datetime
+    created_by: str
+    description: str = ""
+
+@api_router.post("/projects/{project_id}/versions")
+async def create_version(
+    project_id: str,
+    description: str = "",
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new version snapshot of the project"""
+    
+    # Get current project
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Count existing versions
+    version_count = await db.project_versions.count_documents({"project_id": project_id})
+    
+    # Create version
+    version = {
+        "version_id": f"ver_{uuid.uuid4().hex[:12]}",
+        "project_id": project_id,
+        "version_number": version_count + 1,
+        "files": project["files"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user.user_id,
+        "description": description or f"Version {version_count + 1}"
+    }
+    
+    await db.project_versions.insert_one(version)
+    
+    return {"message": "Version created", "version": version}
+
+@api_router.get("/projects/{project_id}/versions")
+async def get_versions(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get all versions of a project"""
+    
+    versions = await db.project_versions.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).sort("version_number", -1).to_list(100)
+    
+    return versions
+
+@api_router.post("/projects/{project_id}/rollback/{version_id}")
+async def rollback_to_version(
+    project_id: str,
+    version_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Rollback project to a specific version"""
+    
+    # Get version
+    version = await db.project_versions.find_one(
+        {"version_id": version_id, "project_id": project_id},
+        {"_id": 0}
+    )
+    
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+    
+    # Update project with version files
+    await db.projects.update_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"$set": {"files": version["files"]}}
+    )
+    
+    return {"message": "Rolled back successfully", "version_number": version["version_number"]}
+
     # Update file content
     files = project['files']
     file_found = False
