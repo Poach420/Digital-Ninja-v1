@@ -162,7 +162,7 @@ const Builder = () => {
               <Button
                 onClick={handleBuild}
                 disabled={generating || !prompt.trim()}
-                className="w-full h-14 bg-[#ff4500] hover:bg-[#ff5722] text-white font-semibold text-lg shadow-lg shadow-[#ff4500]/30 disabled:opacity-50"
+                className="w-full h-14 bg-gradient-to-r from-[#9b00e8] to-[#ff4500] hover:from-[#8800d4] hover:to-[#e63e00] text-white font-semibold text-lg shadow-lg shadow-[#9b00e8]/30 disabled:opacity-50 rounded-xl transition-all"
               >
                 {generating ? (
                   <>
