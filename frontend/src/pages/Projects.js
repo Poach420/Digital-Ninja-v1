@@ -76,7 +76,7 @@ const Projects = () => {
               <Card
                 key={project.project_id}
                 className="bg-slate-800/50 border-slate-700 hover:border-indigo-500 transition-colors cursor-pointer"
-                onClick={() => navigate(`/project/${project.project_id}`)}
+                onClick={() => navigate(`/editor/${project.project_id}`)}
                 data-testid={`project-${project.project_id}`}
               >
                 <CardHeader>
