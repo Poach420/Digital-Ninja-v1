@@ -434,6 +434,53 @@ async def deploy_project(
     
     return result
 
+
+@api_router.post("/projects/{project_id}/export/github")
+async def export_to_github(
+    project_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    """Export project to GitHub - clean, deployment-ready code"""
+    
+    # Get project
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Clean files - remove .emergent dependencies
+    cleaned_files = []
+    for file in project['files']:
+        content = file['content']
+        
+        # Remove emergent-specific imports/code
+        if 'emergent' not in file['path'].lower():
+            # Clean imports
+            if file['path'].endswith('.js') or file['path'].endswith('.jsx'):
+                # Remove any emergent imports
+                lines = content.split('\n')
+                cleaned_lines = [l for l in lines if 'emergent' not in l.lower()]
+                content = '\n'.join(cleaned_lines)
+            
+            cleaned_files.append({
+                "path": file['path'],
+                "content": content,
+                "language": file.get('language', 'text')
+            })
+    
+    # Return cleaned project structure
+    return {
+        "project_name": project['name'],
+        "description": project.get('description', ''),
+        "files": cleaned_files,
+        "ready_for_export": True,
+        "deployment_ready": True
+    }
+
 @api_router.get("/deployments")
 async def get_deployments(current_user: User = Depends(get_current_user)):
     """Get all deployments for current user"""
