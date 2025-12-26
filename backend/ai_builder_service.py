@@ -132,6 +132,9 @@ Return the JSON structure with complete code now."""
                     "language": "json"
                 })
             
+            # Add deployment configs if not present
+            self._add_deployment_configs(app_structure, tech_stack)
+            
             # Add README if not present
             if not any(f['path'].endswith('README.md') for f in app_structure['files']):
                 app_structure['files'].append({
