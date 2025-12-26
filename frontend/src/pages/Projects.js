@@ -44,7 +44,7 @@ const Projects = () => {
             <p className="text-slate-400">Welcome back, {user.name}</p>
           </div>
           <div className="flex gap-3">
-            <Button onClick={() => navigate('/builder')} className="bg-indigo-600 hover:bg-indigo-700" data-testid="new-project-button">
+            <Button onClick={() => navigate('/builder')} className="bg-[#ff4500] hover:bg-[#ff5722]" data-testid="new-project-button">
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Button>
@@ -62,10 +62,10 @@ const Projects = () => {
           </div>
         ) : projects.length === 0 ? (
           <Card className="p-12 text-center bg-slate-800/50 border-slate-700">
-            <Sparkles className="h-16 w-16 text-indigo-400 mx-auto mb-4" />
+            <Sparkles className="h-16 w-16 text-[#ff4500] mx-auto mb-4" />
             <h2 className="text-2xl font-heading font-bold text-white mb-2">No Projects Yet</h2>
             <p className="text-slate-400 mb-6">Start building your first AI-generated application</p>
-            <Button onClick={() => navigate('/builder')} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={() => navigate('/builder')} className="bg-[#ff4500] hover:bg-[#ff5722]">
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Project
             </Button>
@@ -81,7 +81,7 @@ const Projects = () => {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
-                    <Code2 className="h-8 w-8 text-indigo-400" />
+                    <Code2 className="h-8 w-8 text-[#ff4500]" />
                     <Badge variant="outline" className="text-xs text-slate-300 border-slate-600">
                       {project.tech_stack.frontend}
                     </Badge>
