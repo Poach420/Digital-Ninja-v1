@@ -176,8 +176,11 @@ const ProjectEditor = () => {
           <Button variant="outline" size="sm" onClick={handleDeploy} disabled={deploying} className="text-white border-slate-600 bg-indigo-600 hover:bg-indigo-700" data-testid="deploy-button">
             <Rocket className="h-4 w-4 mr-2" />{deploying ? 'Deploying...' : 'Deploy'}
           </Button>
+          <Button variant="outline" size="sm" onClick={handleGitHubExport} className="text-white border-slate-600 bg-purple-600 hover:bg-purple-700" data-testid="github-export-button">
+            <Github className="h-4 w-4 mr-2" />Export to GitHub
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExport} className="text-white border-slate-600" data-testid="export-button">
-            <Download className="h-4 w-4 mr-2" />Export
+            <Download className="h-4 w-4 mr-2" />Download
           </Button>
           <Button variant="outline" size="sm" onClick={handleDelete} className="text-red-400 border-slate-600" data-testid="delete-button">
             <Trash2 className="h-4 w-4 mr-2" />Delete
