@@ -189,16 +189,16 @@ const Builder = () => {
                   chatHistory.map((msg, idx) => (
                     <div
                       key={idx}
-                      className={`p-4 rounded-lg ${
+                      className={`p-4 rounded-xl animate-fade-in ${
                         msg.role === 'user'
-                          ? 'bg-[#ff4500] text-white ml-12'
-                          : 'bg-gray-700 text-gray-100 mr-12'
+                          ? 'bg-gradient-to-r from-[#9b00e8] to-[#ff4500] text-white ml-12'
+                          : 'bg-gray-700/80 text-gray-100 mr-12 border border-gray-600'
                       }`}
                     >
-                      <p className="text-sm font-semibold mb-1">
-                        {msg.role === 'user' ? 'You' : 'GPT-4'}
+                      <p className="text-xs font-semibold mb-2 opacity-80">
+                        {msg.role === 'user' ? '👤 You' : '🤖 GPT-4'}
                       </p>
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     </div>
                   ))
                 )}
