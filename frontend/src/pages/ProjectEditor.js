@@ -173,10 +173,10 @@ const ProjectEditor = () => {
           <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="text-white border-slate-600" data-testid="save-button">
             <Save className="h-4 w-4 mr-2" />{saving ? 'Saving...' : 'Save'}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDeploy} disabled={deploying} className="text-white border-slate-600 bg-indigo-600 hover:bg-indigo-700" data-testid="deploy-button">
+          <Button variant="outline" size="sm" onClick={handleDeploy} disabled={deploying} className="text-white border-slate-600 bg-[#ff4500] hover:bg-[#ff5722]" data-testid="deploy-button">
             <Rocket className="h-4 w-4 mr-2" />{deploying ? 'Deploying...' : 'Deploy'}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleGitHubExport} className="text-white border-slate-600 bg-purple-600 hover:bg-purple-700" data-testid="github-export-button">
+          <Button variant="outline" size="sm" onClick={handleGitHubExport} className="text-white border-slate-600 bg-[#ff4500] hover:bg-[#ff5722]" data-testid="github-export-button">
             <Github className="h-4 w-4 mr-2" />Export to GitHub
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport} className="text-white border-slate-600" data-testid="export-button">
@@ -194,7 +194,7 @@ const ProjectEditor = () => {
           </div>
           <div className="p-2">
             {project.files.map((file, idx) => (
-              <button key={idx} onClick={() => selectFile(file)} className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${selectedFile?.path === file.path ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`} data-testid={`file-${idx}`}>
+              <button key={idx} onClick={() => selectFile(file)} className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${selectedFile?.path === file.path ? 'bg-[#ff4500] text-white' : 'text-slate-300 hover:bg-slate-700'}`} data-testid={`file-${idx}`}>
                 <Code2 className="h-3 w-3 inline mr-2" />{file.path}
               </button>
             ))}
