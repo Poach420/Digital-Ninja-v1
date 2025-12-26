@@ -678,6 +678,736 @@ h1 {
 .todo-form {
   display: flex;
   gap: 10px;
+
+    
+    def _get_natural_medicine_template(self) -> Dict:
+        """Complete working natural medicine website"""
+        return {
+            "app_name": "natural-medicine-site",
+            "description": "A website promoting natural medicine and wellness",
+            "files": [
+                {
+                    "path": "frontend/package.json",
+                    "content": self._generate_package_json("natural-medicine-site"),
+                    "language": "json"
+                },
+                {
+                    "path": "frontend/src/App.js",
+                    "content": """import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [activeSection, setActiveSection] = useState('home');
+
+  const services = [
+    {
+      icon: '🌿',
+      title: 'Herbal Medicine',
+      description: 'Traditional herbal remedies for holistic healing and wellness.'
+    },
+    {
+      icon: '💆',
+      title: 'Aromatherapy',
+      description: 'Essential oils and natural fragrances for therapeutic benefits.'
+    },
+    {
+      icon: '🧘',
+      title: 'Meditation & Yoga',
+      description: 'Mind-body practices for stress relief and inner peace.'
+    },
+    {
+      icon: '🍃',
+      title: 'Nutritional Therapy',
+      description: 'Whole food nutrition and supplement guidance.'
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: 'Sarah Johnson',
+      text: 'Natural medicine changed my life. I feel healthier and more energized than ever!',
+      rating: 5
+    },
+    {
+      name: 'Michael Chen',
+      text: 'The herbal treatments helped me manage chronic pain without harsh medications.',
+      rating: 5
+    },
+    {
+      name: 'Emma Williams',
+      text: 'Amazing experience! The practitioners are knowledgeable and caring.',
+      rating: 5
+    }
+  ];
+
+  return (
+    <div className="app">
+      {/* Header */}
+      <header className="header">
+        <div className="container">
+          <div className="logo">
+            <span className="logo-icon">🌿</span>
+            <span className="logo-text">Natural Healing</span>
+          </div>
+          <nav className="nav">
+            <button 
+              onClick={() => setActiveSection('home')}
+              className={activeSection === 'home' ? 'active' : ''}
+            >
+              Home
+            </button>
+            <button 
+              onClick={() => setActiveSection('services')}
+              className={activeSection === 'services' ? 'active' : ''}
+            >
+              Services
+            </button>
+            <button 
+              onClick={() => setActiveSection('testimonials')}
+              className={activeSection === 'testimonials' ? 'active' : ''}
+            >
+              Testimonials
+            </button>
+            <button 
+              onClick={() => setActiveSection('contact')}
+              className={activeSection === 'contact' ? 'active' : ''}
+            >
+              Contact
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      {activeSection === 'home' && (
+        <section className="hero">
+          <div className="container">
+            <h1 className="hero-title">Embrace Natural Healing</h1>
+            <p className="hero-subtitle">
+              Discover the power of nature to restore balance, vitality, and wellness
+            </p>
+            <button 
+              className="cta-button"
+              onClick={() => setActiveSection('services')}
+            >
+              Explore Our Services
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Services Section */}
+      {activeSection === 'services' && (
+        <section className="services">
+          <div className="container">
+            <h2 className="section-title">Our Natural Medicine Services</h2>
+            <div className="services-grid">
+              {services.map((service, idx) => (
+                <div key={idx} className="service-card">
+                  <div className="service-icon">{service.icon}</div>
+                  <h3>{service.title}</h3>
+                  <p>{service.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Testimonials Section */}
+      {activeSection === 'testimonials' && (
+        <section className="testimonials">
+          <div className="container">
+            <h2 className="section-title">What Our Clients Say</h2>
+            <div className="testimonials-grid">
+              {testimonials.map((testimonial, idx) => (
+                <div key={idx} className="testimonial-card">
+                  <div className="stars">
+                    {'★'.repeat(testimonial.rating)}
+                  </div>
+                  <p className="testimonial-text">"{testimonial.text}"</p>
+                  <p className="testimonial-name">- {testimonial.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Contact Section */}
+      {activeSection === 'contact' && (
+        <section className="contact">
+          <div className="container">
+            <h2 className="section-title">Get In Touch</h2>
+            <div className="contact-form">
+              <input type="text" placeholder="Your Name" className="form-input" />
+              <input type="email" placeholder="Your Email" className="form-input" />
+              <textarea placeholder="Your Message" className="form-textarea" rows="5"></textarea>
+              <button className="submit-button">Send Message</button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="footer">
+        <p>© 2024 Natural Healing • Embrace the Power of Nature</p>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
+""",
+                    "language": "javascript"
+                },
+                {
+                    "path": "frontend/src/App.css",
+                    "content": """* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+.header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.logo-icon {
+  font-size: 32px;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav button {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 8px;
+}
+
+.nav button:hover {
+  color: #2e7d32;
+  background: #f1f8e9;
+}
+
+.nav button.active {
+  color: white;
+  background: #2e7d32;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #66bb6a 0%, #2e7d32 100%);
+  color: white;
+  padding: 120px 20px;
+  text-align: center;
+  flex: 1;
+}
+
+.hero-title {
+  font-size: 56px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.hero-subtitle {
+  font-size: 24px;
+  margin-bottom: 40px;
+  opacity: 0.95;
+}
+
+.cta-button {
+  background: white;
+  color: #2e7d32;
+  border: none;
+  padding: 16px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* Services */
+.services {
+  padding: 80px 20px;
+  flex: 1;
+}
+
+.section-title {
+  font-size: 42px;
+  text-align: center;
+  color: #2e7d32;
+  margin-bottom: 60px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.service-card {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.service-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.service-card h3 {
+  font-size: 24px;
+  color: #2e7d32;
+  margin-bottom: 15px;
+}
+
+.service-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Testimonials */
+.testimonials {
+  padding: 80px 20px;
+  background: white;
+  flex: 1;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.testimonial-card {
+  background: #f1f8e9;
+  padding: 30px;
+  border-radius: 16px;
+  border-left: 4px solid #2e7d32;
+}
+
+.stars {
+  color: #ffa726;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.testimonial-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+.testimonial-name {
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+/* Contact */
+.contact {
+  padding: 80px 20px;
+  flex: 1;
+}
+
+.contact-form {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2e7d32;
+}
+
+.submit-button {
+  width: 100%;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.submit-button:hover {
+  background: #1b5e20;
+}
+
+/* Footer */
+.footer {
+  background: #2e7d32;
+  color: white;
+  text-align: center;
+  padding: 30px 20px;
+  margin-top: auto;
+}
+""",
+                    "language": "css"
+                }
+            ],
+            "setup_instructions": "Run 'npm install' in the frontend directory, then 'npm start'",
+            "deployment_notes": "Deploy to Vercel or Netlify"
+        }
+    
+    def _get_weather_template(self) -> Dict:
+        """Complete working weather app"""
+        return {
+            "app_name": "weather-app",
+            "description": "A weather app with city search and forecast display",
+            "files": [
+                {
+                    "path": "frontend/package.json",
+                    "content": self._generate_package_json("weather-app"),
+                    "language": "json"
+                },
+                {
+                    "path": "frontend/src/App.js",
+                    "content": """import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [city, setCity] = useState('');
+  const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Mock weather data (in production, use OpenWeatherMap API)
+  const mockWeatherData = {
+    temperature: Math.floor(Math.random() * 20) + 15,
+    condition: ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy'][Math.floor(Math.random() * 4)],
+    humidity: Math.floor(Math.random() * 40) + 40,
+    windSpeed: Math.floor(Math.random() * 20) + 5
+  };
+
+  const searchWeather = () => {
+    if (!city.trim()) return;
+    
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setWeather({
+        city: city,
+        ...mockWeatherData
+      });
+      setLoading(false);
+    }, 1000);
+  };
+
+  const getWeatherIcon = (condition) => {
+    const icons = {
+      'Sunny': '☀️',
+      'Cloudy': '☁️',
+      'Rainy': '🌧️',
+      'Partly Cloudy': '⛅'
+    };
+    return icons[condition] || '🌤️';
+  };
+
+  return (
+    <div className="app">
+      <div className="weather-card">
+        <h1 className="title">Weather App</h1>
+        
+        <div className="search-box">
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && searchWeather()}
+            placeholder="Enter city name..."
+            className="search-input"
+          />
+          <button onClick={searchWeather} className="search-button">
+            🔍 Search
+          </button>
+        </div>
+
+        {loading && (
+          <div className="loading">Loading weather data...</div>
+        )}
+
+        {weather && !loading && (
+          <div className="weather-display">
+            <h2 className="city-name">{weather.city}</h2>
+            <div className="weather-icon">{getWeatherIcon(weather.condition)}</div>
+            <div className="temperature">{weather.temperature}°C</div>
+            <div className="condition">{weather.condition}</div>
+            
+            <div className="details-grid">
+              <div className="detail-item">
+                <div className="detail-icon">💧</div>
+                <div>
+                  <div className="detail-label">Humidity</div>
+                  <div className="detail-value">{weather.humidity}%</div>
+                </div>
+              </div>
+              <div className="detail-item">
+                <div className="detail-icon">💨</div>
+                <div>
+                  <div className="detail-label">Wind Speed</div>
+                  <div className="detail-value">{weather.windSpeed} km/h</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+""",
+                    "language": "javascript"
+                },
+                {
+                    "path": "frontend/src/App.css",
+                    "content": """* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.weather-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.title {
+  text-align: center;
+  font-size: 32px;
+  color: #667eea;
+  margin-bottom: 30px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+}
+
+.search-button {
+  padding: 12px 24px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.search-button:hover {
+  background: #5568d3;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 18px;
+}
+
+.weather-display {
+  text-align: center;
+  animation: fadeIn 0.5s;
+}
+
+.city-name {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.weather-icon {
+  font-size: 100px;
+  margin: 20px 0;
+}
+
+.temperature {
+  font-size: 48px;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.condition {
+  font-size: 20px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-icon {
+  font-size: 32px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+""",
+                    "language": "css"
+                }
+            ],
+            "setup_instructions": "Run 'npm install' in the frontend directory, then 'npm start'",
+            "deployment_notes": "Deploy to Vercel or Netlify. To use real weather data, sign up for OpenWeatherMap API key"
+        }
+    
+    def _get_website_template(self) -> Dict:
+        """Generic website template"""
+        return self._get_natural_medicine_template()  # Use natural medicine as default website
+
   margin-bottom: 20px;
 }
 
