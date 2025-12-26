@@ -7,14 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import api from '../utils/api';
 import { Sparkles, Loader2 } from 'lucide-react';
+import GenerationLogger from '../components/GenerationLogger';
 
 const Builder = () => {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState('');
-  const [mode, setMode] = useState('build'); // 'build' or 'chat'
+  const [mode, setMode] = useState('build');
   const [chatHistory, setChatHistory] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [chatting, setChatting] = useState(false);
+  const [showLogger, setShowLogger] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState(null);
 
   const handleBuild = async () => {
     if (!prompt.trim()) {
@@ -23,6 +26,8 @@ const Builder = () => {
     }
 
     setGenerating(true);
+    setShowLogger(true);
+    
     try {
       const response = await api.post('/projects/generate', {
         prompt: prompt.trim(),
@@ -33,13 +38,23 @@ const Builder = () => {
         }
       });
 
+      setCurrentProjectId(response.data.project_id);
       toast.success(`Project "${response.data.name}" generated successfully!`);
-      navigate(`/editor/${response.data.project_id}`);
+      
+      // Logger will handle navigation after completion
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error.response?.data?.detail || 'Failed to generate project');
-    } finally {
+      setShowLogger(false);
       setGenerating(false);
+    }
+  };
+
+  const handleGenerationComplete = () => {
+    setGenerating(false);
+    setShowLogger(false);
+    if (currentProjectId) {
+      navigate(`/editor/${currentProjectId}`);
     }
   };
 
