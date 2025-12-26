@@ -554,6 +554,10 @@ async def delete_deployment(deployment_id: str, current_user: User = Depends(get
     )
     
     if not deployment:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+    
+    await db.deployments.delete_one({"deployment_id": deployment_id})
+    return {"message": "Deployment deleted successfully"}
 
 
 # ==================== HEALTH CHECK ====================
