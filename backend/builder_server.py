@@ -537,12 +537,6 @@ async def chat_with_gpt(request: ChatMessage, current_user: User = Depends(get_c
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get chat response")
 
-        "description": project.get('description', ''),
-        "files": cleaned_files,
-        "ready_for_export": True,
-        "deployment_ready": True
-    }
-
 @api_router.get("/deployments")
 async def get_deployments(current_user: User = Depends(get_current_user)):
     """Get all deployments for current user"""
