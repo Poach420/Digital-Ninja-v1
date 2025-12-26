@@ -580,26 +580,6 @@ async def root():
         "docs": "/docs"
     }
 
-        raise HTTPException(status_code=404, detail="Deployment not found")
-    
-    # Delete from infrastructure
-    if deployment.get("frontend"):
-        await deployment_service.delete_deployment(
-            deployment["frontend"].get("deployment_id"),
-            "vercel"
-        )
-    
-    if deployment.get("backend"):
-        await deployment_service.delete_deployment(
-            deployment["backend"].get("service_id"),
-            "render"
-        )
-    
-    # Delete from database
-    await db.deployments.delete_one({"deployment_id": deployment_id})
-    
-    return {"message": "Deployment deleted"}
-
 # ==================== ADMIN DEPLOYMENT ENDPOINTS ====================
 
 @api_router.get("/admin/deployments")
