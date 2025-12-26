@@ -11,12 +11,12 @@ import { Sparkles, Loader2 } from 'lucide-react';
 const Builder = () => {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState('');
-  const [frontend, setFrontend] = useState('React');
-  const [backend, setBackend] = useState('FastAPI');
-  const [database, setDatabase] = useState('MongoDB');
+  const [mode, setMode] = useState('build'); // 'build' or 'chat'
+  const [chatHistory, setChatHistory] = useState([]);
   const [generating, setGenerating] = useState(false);
+  const [chatting, setChatting] = useState(false);
 
-  const handleGenerate = async () => {
+  const handleBuild = async () => {
     if (!prompt.trim()) {
       toast.error('Please enter a project description');
       return;
@@ -27,19 +27,54 @@ const Builder = () => {
       const response = await api.post('/projects/generate', {
         prompt: prompt.trim(),
         tech_stack: {
-          frontend,
-          backend,
-          database
+          frontend: 'React',
+          backend: 'FastAPI',
+          database: 'MongoDB'
         }
       });
 
       toast.success(`Project "${response.data.name}" generated successfully!`);
-      navigate(`/project/${response.data.project_id}`);
+      navigate(`/editor/${response.data.project_id}`);
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error.response?.data?.detail || 'Failed to generate project');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleChat = async () => {
+    if (!prompt.trim()) {
+      toast.error('Please enter a message');
+      return;
+    }
+
+    const userMessage = prompt.trim();
+    setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+    setPrompt('');
+    setChatting(true);
+
+    try {
+      const response = await api.post('/chat', {
+        message: userMessage,
+        history: chatHistory
+      });
+
+      setChatHistory(prev => [...prev, { role: 'assistant', content: response.data.response }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast.error('Failed to get response');
+      setChatHistory(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+    } finally {
+      setChatting(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (mode === 'build') {
+      handleBuild();
+    } else {
+      handleChat();
     }
   };
 
