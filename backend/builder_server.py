@@ -197,7 +197,10 @@ async def process_google_session(request: Request):
     data = await request.json()
     session_id = data.get("session_id")
     
+    logger.info(f"Processing Google OAuth session: {session_id[:10] if session_id else 'None'}...")
+    
     if not session_id:
+        logger.error("Missing session_id in request")
         raise HTTPException(status_code=400, detail="Missing session_id")
     
     # For Emergent Auth, the session_id IS the session token
@@ -208,15 +211,17 @@ async def process_google_session(request: Request):
     existing_session = await db.user_sessions.find_one({"session_token": session_id}, {"_id": 0})
     
     if existing_session:
+        logger.info(f"Found existing session for user: {existing_session['user_id']}")
         user_id = existing_session["user_id"]
         user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     else:
+        logger.info("Creating new user for OAuth session")
         # Create new user with OAuth - we don't have email yet, so use session_id as identifier
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         user_doc = {
             "user_id": user_id,
             "email": f"oauth_{session_id[:10]}@temp.com",  # Temp email, will be updated
-            "name": "OAuth User",
+            "name": "Digital Ninja User",
             "picture": "",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
