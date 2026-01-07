@@ -1,0 +1,31 @@
+COPILOT CONTINUATION SUMMARY
+Project Context:
+
+This project was migrated from OneDrive to a local folder due to sync/corruption issues.
+All critical rules, onboarding files, and documentation (PROJECT_SUMMARY.md, UNIVERSAL_COPILOT_RULES.md, README.md) are preserved and must be present in the new workspace.
+The current working folder is:
+C:\Users\User 1\dyad-apps\DIGITAL-NINJA RET
+Automation Rules:
+
+Copilot must act as a fully automated agent, executing tasks directly and continuing until the problem is solved.
+All generated code must follow CRITICAL RULES:
+NO placeholder functions or TODO comments
+NO "implement this" messages
+COMPLETE working application only
+Professional styling included
+Return ONLY valid code and config, no markdown/code blocks unless required for documentation
+Workflow:
+
+On startup, scan the project folder for structure and dependencies.
+Automate setup, build, and verification for both frontend and backend.
+Ensure all onboarding context and rules are preserved and referenced.
+Minimize user burden: do not require repeated instructions or manual intervention unless absolutely necessary.
+Next Steps for Copilot:
+
+Scan the new Dyad folder for all files and dependencies.
+Automate setup and build for frontend (npm install/start) and backend (pip install/start).
+Verify the app runs locally and matches requirements.
+If anything is missing, prompt for the exact file or info needed and continue.
+User Intent:
+
+The user expects Copilot to continue seamlessly, using this summary and the onboarding files as context, without requiring repeated instructions.

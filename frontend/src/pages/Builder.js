@@ -27,7 +27,6 @@ const Builder = () => {
 
     setGenerating(true);
     setShowLogger(true);
-    
     try {
       const response = await api.post('/projects/generate', {
         prompt: prompt.trim(),
@@ -40,7 +39,6 @@ const Builder = () => {
 
       setCurrentProjectId(response.data.project_id);
       toast.success(`Project "${response.data.name}" generated successfully!`);
-      
       // Logger will handle navigation after completion
     } catch (error) {
       console.error('Generation error:', error);

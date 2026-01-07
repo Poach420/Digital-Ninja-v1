@@ -1,3 +1,9 @@
+
+
+from dotenv import load_dotenv, find_dotenv
+import sys
+load_dotenv(find_dotenv(), override=True)
+
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,33 +12,62 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 from passlib.context import CryptContext
 from jose import JWTError, jwt
-from dotenv import load_dotenv
-from pathlib import Path
 import os
 import uuid
 import logging
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+# MongoDB robust connection
+mongo_url = os.environ.get('MONGO_URL')
+db_name = os.environ.get('DB_NAME')
+if not mongo_url or not db_name:
+    logging.error('MONGO_URL or DB_NAME not set in environment. Please check your .env file.')
+    print('MONGO_URL:', mongo_url)
+    print('DB_NAME:', db_name)
+    sys.exit(1)
+try:
+    print(f'Attempting MongoDB connection to: {mongo_url}, DB: {db_name}')
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[db_name]
+except Exception as e:
+    logging.error(f'Failed to connect to MongoDB: {e}')
+    print(f'Failed to connect to MongoDB: {e}')
+    sys.exit(1)
 
-from ai_builder_service import ai_builder
 
-# MongoDB
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Add MongoDB connection test to FastAPI startup event (must be after app is defined)
+
+# ...existing code...
 
 app = FastAPI(title="AI Application Builder")
 api_router = APIRouter(prefix="/api")
 
-# Auth setup
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-JWT_SECRET = os.getenv("JWT_SECRET", "your-jwt-secret-key")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 72
+@app.on_event("startup")
+async def test_mongo_connection():
+    try:
+        await db.command("ping")
+        print("MongoDB connection successful.")
+    except Exception as e:
+        print(f"MongoDB connection failed: {e}")
+        raise
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+app = FastAPI(title="AI Application Builder")
+api_router = APIRouter(prefix="/api")
+
+# --- Strict CORS config ---
+from starlette.middleware.cors import CORSMiddleware
+frontend_origin = os.environ.get('CORS_ORIGINS', 'http://localhost:3000')
+if isinstance(frontend_origin, str) and frontend_origin.startswith('['):
+    import ast
+    frontend_origin = ast.literal_eval(frontend_origin)
+elif isinstance(frontend_origin, str):
+    frontend_origin = [o.strip() for o in frontend_origin.split(',') if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ==================== MODELS ====================
 
@@ -42,6 +77,7 @@ class User(BaseModel):
     email: str
     name: str
     created_at: datetime
+    picture: Optional[str] = ""
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -84,9 +120,16 @@ class FileUpdate(BaseModel):
 
 # ==================== AUTH HELPERS ====================
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+JWT_SECRET = os.getenv("JWT_SECRET", "your-jwt-secret-key")
+JWT_ALGORITHM = "HS256"
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    expire = datetime.now(timezone.utc) + timedelta(hours=72)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -99,13 +142,10 @@ def verify_password(plain: str, hashed: str) -> bool:
 async def get_current_user(request: Request) -> User:
     auth_header = request.headers.get("Authorization")
     token = request.cookies.get("session_token")
-    
     if not token and auth_header:
         token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else auth_header
-    
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("user_id")
@@ -113,14 +153,11 @@ async def get_current_user(request: Request) -> User:
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
-    
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if not user_doc:
         raise HTTPException(status_code=404, detail="User not found")
-    
     if isinstance(user_doc.get('created_at'), str):
         user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
-    
     return User(**{k: v for k, v in user_doc.items() if k != 'password_hash'})
 
 # ==================== AUTH ENDPOINTS ====================
@@ -130,7 +167,6 @@ async def register(user_data: UserCreate):
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
     user_id = f"user_{uuid.uuid4().hex[:12]}"
     user = User(
         user_id=user_id,
@@ -138,13 +174,10 @@ async def register(user_data: UserCreate):
         name=user_data.name,
         created_at=datetime.now(timezone.utc)
     )
-    
     user_dict = user.model_dump()
     user_dict['password_hash'] = hash_password(user_data.password)
     user_dict['created_at'] = user_dict['created_at'].isoformat()
-    
     await db.users.insert_one(user_dict)
-    
     access_token = create_access_token(data={"user_id": user.user_id})
     return TokenResponse(access_token=access_token, user=user)
 
@@ -153,20 +186,14 @@ async def login(credentials: UserLogin):
     user_doc = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user_doc:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    # Check if user has a password_hash (users who signed up with Google OAuth don't have one)
     if not user_doc.get('password_hash'):
         raise HTTPException(status_code=401, detail="This account uses Google sign-in. Please sign in with Google.")
-    
     if not verify_password(credentials.password, user_doc.get('password_hash')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
     if isinstance(user_doc.get('created_at'), str):
         user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
-    
     user = User(**{k: v for k, v in user_doc.items() if k != 'password_hash'})
     access_token = create_access_token(data={"user_id": user.user_id})
-    
     return TokenResponse(access_token=access_token, user=user)
 
 @api_router.get("/auth/me", response_model=User)
@@ -178,150 +205,171 @@ async def get_me(current_user: User = Depends(get_current_user)):
 @api_router.get("/auth/google")
 async def google_auth(request: Request):
     """Initiate Google OAuth flow"""
-    # Get the frontend origin from the request
-    frontend_url = os.environ.get('FRONTEND_URL', request.headers.get('origin', 'http://localhost:3000'))
-    redirect_url = f"{frontend_url}/auth/callback"
-    
-    # Redirect to Emergent auth with the callback URL
-    auth_url = f"https://auth.emergentagent.com/?redirect={redirect_url}"
-    return {"auth_url": auth_url}
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+    google_oauth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={GOOGLE_REDIRECT_URI}&"
+        f"response_type=code&"
+        f"scope=openid%20email%20profile&"
+        f"access_type=offline"
+    )
+    return {"auth_url": google_oauth_url}
 
+
+# POST handler (for API clients)
 @api_router.post("/auth/google/session")
-async def process_google_session(request: Request):
-    """Process Google OAuth session_id from Emergent Auth
-    
-    NOTE: Emergent Auth provides the session_id directly in the URL after OAuth.
-    We use the session_id as the session_token since it's already validated by Emergent.
-    """
-    # Get session_id from request body (sent by frontend)
+async def process_google_session_post(request: Request):
+    """Process Google OAuth code from frontend and exchange for tokens (POST)."""
+    import httpx
     data = await request.json()
-    session_id = data.get("session_id")
-    
-    logger.info(f"Processing Google OAuth session: {session_id[:10] if session_id else 'None'}...")
-    
-    if not session_id:
-        logger.error("Missing session_id in request")
-        raise HTTPException(status_code=400, detail="Missing session_id")
-    
-    # For Emergent Auth, the session_id IS the session token
-    # We need to create a user record based on the fact that Emergent has validated this session
-    # Since we don't have user details yet, we'll create a placeholder and update it later
-    
-    # Check if a session already exists for this token
-    existing_session = await db.user_sessions.find_one({"session_token": session_id}, {"_id": 0})
-    
-    if existing_session:
-        logger.info(f"Found existing session for user: {existing_session['user_id']}")
-        user_id = existing_session["user_id"]
-        user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
-    else:
-        logger.info("Creating new user for OAuth session")
-        # Create new user with OAuth - we don't have email yet, so use session_id as identifier
-        user_id = f"user_{uuid.uuid4().hex[:12]}"
-        user_doc = {
-            "user_id": user_id,
-            "email": f"oauth_{session_id[:10]}@temp.com",  # Temp email, will be updated
-            "name": "Digital Ninja User",
-            "picture": "",
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.users.insert_one(user_doc)
-        
-        # Store session with 7-day expiry
+    code = data.get("code")
+    return await process_google_oauth_code(code)
+
+# GET handler (for browser redirect)
+@api_router.get("/auth/google/session")
+async def process_google_session_get(request: Request):
+    """Process Google OAuth code from Google redirect (GET)."""
+    code = request.query_params.get("code")
+    from fastapi.responses import RedirectResponse, HTMLResponse
+    if not code:
+        return HTMLResponse("<h2>Google OAuth Error: Missing code in query params.</h2>", status_code=400)
+    try:
+        result = await process_google_oauth_code(code)
+        jwt_token = result["access_token"]
+        redirect_url = f"http://localhost:3000/login?token={jwt_token}"
+        return RedirectResponse(url=redirect_url)
+    except Exception as e:
+        return HTMLResponse(f"<h2>Google OAuth Error: {str(e)}</h2>", status_code=400)
+
+# Shared logic for both GET and POST
+async def process_google_oauth_code(code: str):
+    import httpx
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing code")
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
+        "code": code,
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "grant_type": "authorization_code"
+    }
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(token_url, data=token_data, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        if token_resp.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to exchange code for tokens")
+        tokens = token_resp.json()
+        id_token = tokens.get("id_token")
+        access_token = tokens.get("access_token")
+        if not id_token:
+            raise HTTPException(status_code=400, detail="No id_token in Google response")
+        from jose import jwt as jose_jwt
+        user_info = jose_jwt.get_unverified_claims(id_token)
+        email = user_info.get("email")
+        name = user_info.get("name", "Google User")
+        picture = user_info.get("picture", "")
+        if not email:
+            raise HTTPException(status_code=400, detail="No email in Google id_token")
+        user_doc = await db.users.find_one({"email": email}, {"_id": 0})
+        if not user_doc:
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            user_doc = {
+                "user_id": user_id,
+                "email": email,
+                "name": name,
+                "picture": picture,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(user_doc)
+        else:
+            user_id = user_doc["user_id"]
+        session_token = uuid.uuid4().hex
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
         await db.user_sessions.insert_one({
             "user_id": user_id,
-            "session_token": session_id,
+            "session_token": session_token,
             "expires_at": expires_at.isoformat(),
             "created_at": datetime.now(timezone.utc).isoformat()
         })
-    
-    if isinstance(user_doc.get('created_at'), str):
-        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
-    
-    user = User(**user_doc)
-    
-    # Create JWT token
-    access_token = create_access_token(data={"user_id": user.user_id})
-    
-    return {
-        "access_token": access_token,
-        "session_token": session_id,
-        "user": user,
-        "token_type": "bearer"
-    }
+        user = User(**user_doc)
+        jwt_token = create_access_token(data={"user_id": user.user_id})
+        return {"access_token": jwt_token, "user": user_doc}
 
-
-# ==================== AI BUILDER ENDPOINTS ====================
-
-@api_router.post("/projects/generate", response_model=Project)
-async def generate_project(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
-    """Generate a complete application from natural language prompt"""
-    
-    logger.info(f"Generating project for user {current_user.user_id}: {project_data.prompt}")
-    
-    # Generate app structure using AI
-    app_structure = await ai_builder.generate_app_structure(
-        project_data.prompt,
-        project_data.tech_stack
-    )
-    
-    # Create project
-    project_id = f"proj_{uuid.uuid4().hex[:12]}"
-    project = Project(
-        project_id=project_id,
-        user_id=current_user.user_id,
-        name=app_structure['app_name'],
-        description=app_structure['description'],
-        prompt=project_data.prompt,
-        tech_stack=project_data.tech_stack,
-        files=app_structure['files'],
-        status="active",
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc)
-    )
-    
-    # Save to database
-    project_dict = project.model_dump()
-    project_dict['created_at'] = project_dict['created_at'].isoformat()
-    project_dict['updated_at'] = project_dict['updated_at'].isoformat()
-    
-    await db.projects.insert_one(project_dict)
-    
-    logger.info(f"Project {project_id} created with {len(app_structure['files'])} files")
-    
-    return project
+# ==================== PROJECT ENDPOINTS ====================
 
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(current_user: User = Depends(get_current_user)):
-    """Get all projects for current user"""
     projects = await db.projects.find({"user_id": current_user.user_id}, {"_id": 0}).to_list(100)
-    
     for proj in projects:
         if isinstance(proj.get('created_at'), str):
             proj['created_at'] = datetime.fromisoformat(proj['created_at'])
         if isinstance(proj.get('updated_at'), str):
             proj['updated_at'] = datetime.fromisoformat(proj['updated_at'])
-    
     return projects
 
 @api_router.get("/projects/{project_id}", response_model=Project)
 async def get_project(project_id: str, current_user: User = Depends(get_current_user)):
-    """Get specific project with all files"""
     project = await db.projects.find_one(
         {"project_id": project_id, "user_id": current_user.user_id},
         {"_id": 0}
     )
-    
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    
     if isinstance(project.get('created_at'), str):
         project['created_at'] = datetime.fromisoformat(project['created_at'])
     if isinstance(project.get('updated_at'), str):
         project['updated_at'] = datetime.fromisoformat(project['updated_at'])
-    
     return Project(**project)
+
+@api_router.post("/projects/generate", response_model=Project)
+async def generate_project(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
+    from ai_builder_service import AIBuilderService
+    try:
+        ai_builder = AIBuilderService()
+        app_struct = await ai_builder.generate_app_structure(project_data.prompt, project_data.tech_stack)
+        project_id = f"proj_{uuid.uuid4().hex[:12]}"
+        now = datetime.now(timezone.utc)
+        project_doc = {
+            "project_id": project_id,
+            "user_id": current_user.user_id,
+            "name": app_struct.get("app_name", "AI Project"),
+            "description": app_struct.get("description", project_data.prompt),
+            "prompt": project_data.prompt,
+            "tech_stack": project_data.tech_stack,
+            "files": app_struct.get("files", []),
+            "status": "active",
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat()
+        }
+        await db.projects.insert_one(project_doc)
+        project_doc['created_at'] = now
+        project_doc['updated_at'] = now
+        return Project(**project_doc)
+    except Exception as e:
+        logging.error(f"AI builder error: {e}")
+        raise HTTPException(status_code=500, detail=f"AI builder error: {e}")
+
+# --- Add /api/chat endpoint if missing ---
+from fastapi import Body
+class ChatRequest(BaseModel):
+    prompt: str
+    tech_stack: Optional[Dict[str, str]] = None
+
+@api_router.post("/chat")
+async def chat_endpoint(data: ChatRequest = Body(...), current_user: User = Depends(get_current_user)):
+    from ai_builder_service import AIBuilderService
+    try:
+        ai_builder = AIBuilderService()
+        result = await ai_builder.generate_app_structure(data.prompt, data.tech_stack or {})
+        return {"result": result}
+    except Exception as e:
+        logging.error(f"AI chat error: {e}")
+        raise HTTPException(status_code=500, detail=f"AI chat error: {e}")
 
 @api_router.put("/projects/{project_id}/files")
 async def update_file(
@@ -329,476 +377,31 @@ async def update_file(
     file_update: FileUpdate,
     current_user: User = Depends(get_current_user)
 ):
-    """Update a specific file in project"""
-    project = await db.projects.find_one(
+    result = await db.projects.update_one(
         {"project_id": project_id, "user_id": current_user.user_id},
-        {"_id": 0}
+        {"$set": {"files.$[elem].content": file_update.content, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        array_filters=[{"elem.path": file_update.path}]
     )
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="File or project not found")
+    return {"message": "File updated"}
 
 
-# ==================== VERSION HISTORY ====================
-
-class ProjectVersion(BaseModel):
-    version_id: str
-    project_id: str
-    version_number: int
-    files: List[Dict[str, Any]]
-    created_at: datetime
-    created_by: str
-    description: str = ""
-
-@api_router.post("/projects/{project_id}/versions")
-async def create_version(
-    project_id: str,
-    description: str = "",
-    current_user: User = Depends(get_current_user)
-):
-    """Create a new version snapshot of the project"""
-    
-    # Get current project
-    project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"_id": 0}
-    )
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Count existing versions
-    version_count = await db.project_versions.count_documents({"project_id": project_id})
-    
-    # Create version
-    version = {
-        "version_id": f"ver_{uuid.uuid4().hex[:12]}",
-        "project_id": project_id,
-        "version_number": version_count + 1,
-        "files": project["files"],
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "created_by": current_user.user_id,
-        "description": description or f"Version {version_count + 1}"
-    }
-    
-    await db.project_versions.insert_one(version)
-    
-    return {"message": "Version created", "version": version}
-
-@api_router.get("/projects/{project_id}/versions")
-async def get_versions(
-    project_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Get all versions of a project"""
-    
-    versions = await db.project_versions.find(
-        {"project_id": project_id},
-        {"_id": 0}
-    ).sort("version_number", -1).to_list(100)
-    
-    return versions
-
-@api_router.post("/projects/{project_id}/rollback/{version_id}")
-async def rollback_to_version(
-    project_id: str,
-    version_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Rollback project to a specific version"""
-    
-    # Get version
-    version = await db.project_versions.find_one(
-        {"version_id": version_id, "project_id": project_id},
-        {"_id": 0}
-    )
-    
-    if not version:
-        raise HTTPException(status_code=404, detail="Version not found")
-    
-    # Update project with version files
-    await db.projects.update_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"$set": {"files": version["files"]}}
-    )
-    
-
-
-# ==================== TEAM COLLABORATION ====================
-
-class TeamMember(BaseModel):
-    member_id: str
-    project_id: str
-    user_email: str
-    role: str  # admin, editor, viewer
-    invited_at: datetime
-    invited_by: str
-
-@api_router.post("/projects/{project_id}/team/invite")
-async def invite_team_member(
-    project_id: str,
-    email: EmailStr,
-    role: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Invite a team member to a project"""
-    
-    # Verify project ownership
-    project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"_id": 0}
-    )
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found or not authorized")
-    
-    # Check if already invited
-    existing = await db.team_members.find_one({
-        "project_id": project_id,
-        "user_email": email
-    })
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="User already invited")
-    
-    # Create invitation
-    member = {
-        "member_id": f"mem_{uuid.uuid4().hex[:12]}",
-        "project_id": project_id,
-        "user_email": email,
-        "role": role,
-        "invited_at": datetime.now(timezone.utc).isoformat(),
-        "invited_by": current_user.user_id,
-        "status": "pending"
-    }
-    
-    await db.team_members.insert_one(member)
-    
-    return {"message": f"Invitation sent to {email}", "member": member}
-
-@api_router.get("/projects/{project_id}/team")
-async def get_team_members(
-    project_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Get all team members for a project"""
-    
-    members = await db.team_members.find(
-        {"project_id": project_id},
-        {"_id": 0}
-    ).to_list(100)
-    
-    return members
-
-@api_router.delete("/projects/{project_id}/team/{member_id}")
-async def remove_team_member(
-    project_id: str,
-    member_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Remove a team member from a project"""
-    
-    # Verify ownership
-    project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": current_user.user_id}
-    )
-    
-    if not project:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    await db.team_members.delete_one({"member_id": member_id})
-    
-    return {"message": "Team member removed"}
-
-    return {"message": "Rolled back successfully", "version_number": version["version_number"]}
-
-    # Update file content
-    files = project['files']
-    file_found = False
-    
-    for f in files:
-        if f['path'] == file_update.path:
-            f['content'] = file_update.content
-            file_found = True
-            break
-    
-    if not file_found:
-        # Add new file
-        files.append({
-            "path": file_update.path,
-            "content": file_update.content,
-            "language": file_update.path.split('.')[-1]
-        })
-    
-    # Update project
-    await db.projects.update_one(
-        {"project_id": project_id},
-        {"$set": {
-            "files": files,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }}
-    )
-    
-    return {"message": "File updated successfully", "path": file_update.path}
-
-@api_router.delete("/projects/{project_id}")
-async def delete_project(project_id: str, current_user: User = Depends(get_current_user)):
-    """Delete a project"""
-    result = await db.projects.delete_one(
-        {"project_id": project_id, "user_id": current_user.user_id}
-    )
-    
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    return {"message": "Project deleted successfully"}
-
-@api_router.post("/projects/{project_id}/export")
-async def export_project(project_id: str, current_user: User = Depends(get_current_user)):
-    """Generate export package for project"""
-    project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"_id": 0}
-    )
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Return project data for GitHub export
-    return {
-        "project_id": project_id,
-        "name": project['name'],
-        "files": project['files'],
-        "export_ready": True,
-        "instructions": "Use GitHub export button to create repository"
-    }
-
-# ==================== DEPLOYMENT ENDPOINTS ====================
-
-from deployment_service import deployment_service
-
-@api_router.post("/deployments/deploy")
-async def deploy_project(
-    deployment_request: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
-):
-    """Deploy project to production infrastructure"""
-    project_id = deployment_request.get("project_id")
-    tier = deployment_request.get("tier", "free")
-    
-    # Get project
-    project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"_id": 0}
-    )
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Deploy
-    logger.info(f"Deploying project {project_id} for user {current_user.user_id}")
-    result = await deployment_service.deploy_full_stack(
-        project_id,
-        project['files'],
-        tier
-    )
-    
-    # Save deployment record
-    deployment_dict = {
-        **result,
-        "user_id": current_user.user_id,
-        "project_name": project['name']
-    }
-    await db.deployments.insert_one(deployment_dict)
-    
-    return result
-
-
-@api_router.post("/projects/{project_id}/export/github")
-async def export_to_github(
-    project_id: str,
-    request: Request,
-    current_user: User = Depends(get_current_user)
-):
-    """Export project to GitHub - clean, deployment-ready code"""
-    
-    # Get project
-    project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"_id": 0}
-    )
-    
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Clean files - remove .emergent dependencies
-    cleaned_files = []
-    for file in project['files']:
-        content = file['content']
-        
-        # Remove emergent-specific imports/code
-        if 'emergent' not in file['path'].lower():
-            # Clean imports
-            if file['path'].endswith('.js') or file['path'].endswith('.jsx'):
-                # Remove any emergent imports
-                lines = content.split('\n')
-                cleaned_lines = [l for l in lines if 'emergent' not in l.lower()]
-                content = '\n'.join(cleaned_lines)
-            
-            cleaned_files.append({
-                "path": file['path'],
-                "content": content,
-                "language": file.get('language', 'text')
-            })
-    
-    # Return cleaned project structure
-    return {
-        "project_name": project['name'],
-        "files": cleaned_files
-    }
-
-
-# ==================== CHAT ENDPOINT ====================
-
-class ChatMessage(BaseModel):
-    message: str
-    history: List[Dict[str, str]] = []
-
-@api_router.post("/chat")
-async def chat_with_gpt(request: ChatMessage, current_user: User = Depends(get_current_user)):
-    """Chat with GPT-4 for debugging and improvements"""
-    import httpx
-    
-    openai_key = os.getenv("OPENAI_API_KEY")
-    if not openai_key:
-        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
-    
-    try:
-        # Build messages for GPT-4
-        messages = [
-            {"role": "system", "content": "You are a helpful AI assistant specialized in app development, debugging, and code improvements. Provide clear, actionable advice."}
-        ]
-        
-        # Add history
-        for msg in request.history[-10:]:  # Last 10 messages for context
-            messages.append({"role": msg["role"], "content": msg["content"]})
-        
-        # Add current message
-        messages.append({"role": "user", "content": request.message})
-        
-        # Call OpenAI API
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {openai_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "gpt-4o",
-                    "messages": messages,
-                    "temperature": 0.7,
-                    "max_tokens": 1000
-                },
-                timeout=30.0
-            )
-            response.raise_for_status()
-            data = response.json()
-            
-        return {"response": data["choices"][0]["message"]["content"]}
-        
-    except Exception as e:
-        logger.error(f"Chat error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get chat response")
-
-@api_router.get("/deployments")
-async def get_deployments(current_user: User = Depends(get_current_user)):
-    """Get all deployments for current user"""
-    deployments = await db.deployments.find(
-        {"user_id": current_user.user_id},
-        {"_id": 0}
-    ).to_list(100)
-    return deployments
-
-@api_router.delete("/deployments/{deployment_id}")
-async def delete_deployment(deployment_id: str, current_user: User = Depends(get_current_user)):
-    """Delete a deployment"""
-    deployment = await db.deployments.find_one(
-        {"deployment_id": deployment_id, "user_id": current_user.user_id}
-    )
-    
-    if not deployment:
-        raise HTTPException(status_code=404, detail="Deployment not found")
-    
-    await db.deployments.delete_one({"deployment_id": deployment_id})
-    return {"message": "Deployment deleted successfully"}
-
-
-# ==================== HEALTH CHECK ====================
-
+# ==================== HEALTH CHECK & SETUP ====================
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint for monitoring"""
-    return {
-        "status": "ok",
-        "service": "Digital Ninja App Builder",
-        "version": "1.0.0"
-    }
+    return {"status": "ok", "service": "Digital Ninja App Builder", "version": "1.0.0"}
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
-    return {
-        "message": "Digital Ninja App Builder API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
-
-# ==================== ADMIN DEPLOYMENT ENDPOINTS ====================
-
-@api_router.get("/admin/deployments")
-async def admin_get_all_deployments(current_user: User = Depends(get_current_user)):
-    """Get all deployments (admin only)"""
-    if current_user.role not in ["admin", "owner"]:
-        raise HTTPException(status_code=403, detail="Admin access required")
-    
-    deployments = await db.deployments.find({}, {"_id": 0}).to_list(1000)
-    return deployments
-
-@api_router.get("/admin/deployments/stats")
-async def admin_deployment_stats(current_user: User = Depends(get_current_user)):
-    """Get deployment statistics"""
-    if current_user.role not in ["admin", "owner"]:
-        raise HTTPException(status_code=403, detail="Admin access required")
-    
-    total = await db.deployments.count_documents({})
-    active = await db.deployments.count_documents({"status": "deployed"})
-    failed = await db.deployments.count_documents({"status": {"$in": ["failed", "backend_failed", "frontend_failed"]}})
-    
-    return {
-        "total_deployments": total,
-        "active_deployments": active,
-        "failed_deployments": failed,
-        "success_rate": round((active / total * 100) if total > 0 else 0, 1)
-    }
-
-# ==================== SETUP ====================
+    return {"message": "Digital Ninja App Builder API", "version": "1.0.0", "docs": "/docs"}
 
 app.include_router(api_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+import logging
+logging.info("Setting up CORS for http://localhost:3000")
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
 
-@app.get("/")
-async def root():
-    return {"message": "AI Application Builder API", "version": "1.0.0"}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("builder_server:app", host="0.0.0.0", port=8000, reload=True)

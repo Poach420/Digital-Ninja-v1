@@ -5,7 +5,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent } from '../components/ui/card';
 import { toast } from 'sonner';
-import api from '../utils/api';
+import api, { API } from '../utils/api';
 import { Mail, Lock, User, Zap } from 'lucide-react';
 
 const Register = () => {
@@ -32,11 +32,20 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignup = () => {
-    // Use window.location.origin to dynamically determine redirect URL
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-    const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-    window.location.href = authUrl;
+  const handleGoogleSignup = async () => {
+    // Fetch Google OAuth URL from backend (GET)
+    try {
+      const response = await api.get('/auth/google');
+      if (response.data.auth_url) {
+        window.location.href = response.data.auth_url;
+      } else {
+        alert("Google OAuth not configured. Backend response: " + JSON.stringify(response.data));
+        console.error("Google OAuth error: ", response.data);
+      }
+    } catch (err) {
+      alert("Failed to initiate Google OAuth. " + (err.response ? JSON.stringify(err.response.data) : err.message));
+      console.error("Google OAuth exception: ", err);
+    }
   };
 
   return (

@@ -1,15 +1,26 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
-import api from '../utils/api';
+import api, { API } from '../utils/api';
 import { Mail, Lock, Zap } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
+
+  // Handle token in URL (Google OAuth)
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      localStorage.setItem('token', token);
+      toast.success('Logged in with Google!');
+      navigate('/projects');
+    }
+  }, [navigate]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,11 +42,20 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Use window.location.origin to dynamically determine redirect URL
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-    const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-    window.location.href = authUrl;
+  const handleGoogleLogin = async () => {
+    // Fetch Google OAuth URL from backend (GET)
+    try {
+      const response = await api.get('/auth/google');
+      if (response.data.auth_url) {
+        window.location.href = response.data.auth_url;
+      } else {
+        alert("Google OAuth not configured. Backend response: " + JSON.stringify(response.data));
+        console.error("Google OAuth error: ", response.data);
+      }
+    } catch (err) {
+      alert("Failed to initiate Google OAuth. " + (err.response ? JSON.stringify(err.response.data) : err.message));
+      console.error("Google OAuth exception: ", err);
+    }
   };
 
   return (

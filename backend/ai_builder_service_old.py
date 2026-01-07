@@ -8,12 +8,14 @@ import os
 import json
 import logging
 from typing import Dict, List
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 class AIBuilderService:
     def __init__(self):
-        self.api_key = os.getenv("EMERGENT_LLM_KEY")
+      self.api_key = os.getenv("OPENAI_API_KEY")
         
     async def generate_app_structure(self, prompt: str, tech_stack: Dict[str, str]) -> Dict:
         """Generate complete application structure from prompt"""
