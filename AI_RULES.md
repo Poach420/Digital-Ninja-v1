@@ -33,6 +33,7 @@ This document defines the approved tech stack and clear rules for which librarie
 - Icons & Feedback
   - Icons: lucide-react only.
   - Toasts/notifications: sonner. Render a single <Toaster /> at app root and use the sonner API throughout.
+  - App-specific: import Toaster from frontend/src/components/ui/toaster.jsx and place it once near the root (e.g., in App.js or index.js). Use: import { toast } from 'sonner'.
 
 - Forms & Validation
   - Forms: react-hook-form for form state and submission.
@@ -63,11 +64,22 @@ This document defines the approved tech stack and clear rules for which librarie
   - Reusable components live in frontend/src/components/.
   - Do not place new code inside frontend/src/components/ui; treat that directory as vendor components.
 
+### Project-specific conventions and paths
+- Routing is defined in frontend/src/App.js; keep it the single source of truth.
+- HTTP client: define and reuse a single axios instance with interceptors in frontend/src/utils/api.js.
+- Toasts: ensure a single Toaster is rendered (frontend/src/components/ui/toaster.jsx). Call notifications via sonner's toast API.
+- CRACO: keep CRA overrides in frontend/craco.config.js; avoid ad-hoc build hacks elsewhere.
+
+### Directory & naming conventions
+- Directory names must be all lower-case (e.g., src/pages, src/components, src/components/ui).
+- Create a new file for every new component or hook; keep components small and focused (target <100 lines).
+- Do not colocate new app code inside frontend/src/components/ui; wrap those primitives instead.
+
 ## Backend Rules
 
 - Framework & API
   - Use FastAPI for all HTTP endpoints. Keep routers modular and typed with Pydantic models.
-  - CORS configuration must stay in backend/server.py using FastAPI’s middleware.
+  - CORS configuration must stay in backend/server.py using FastAPI's middleware.
 
 - Database
   - Use MongoDB via Motor (AsyncIOMotorClient). Do not introduce ORMs.
@@ -83,6 +95,12 @@ This document defines the approved tech stack and clear rules for which librarie
 
 - Services
   - Place reusable logic in backend/services/. Keep routes thin and delegate to services.
+  - Follow the existing pattern in backend/services/email_service.py and backend/services/pdf_service.py for organization.
+
+### Backend structure conventions
+- Keep API entry in backend/server.py. Group endpoints with APIRouter. As features grow, move specific routes into dedicated modules and include them from server.py.
+- Access Mongo via a shared AsyncIOMotorClient; avoid per-request client creation.
+- Serialize datetimes to ISO strings when storing; parse to aware datetime when reading.
 
 ## Library Addition Policy
 
@@ -103,3 +121,12 @@ This document defines the approved tech stack and clear rules for which librarie
 - Keep components small and focused (<100 lines when possible).
 - Co-locate small helpers with components or place shared utilities under frontend/src/lib or frontend/src/utils.
 - Prefer pure functions and simple hooks; avoid overengineering.
+- Use the existing ESLint setup; do not introduce additional linters without discussion.
+
+## Do Not Use (for new code)
+
+- window.fetch for API calls (use axios instead).
+- CSS-in-JS libraries (e.g., styled-components, emotion).
+- Alternative icon libraries (stick to lucide-react).
+- Alternative DnD libraries (do not reintroduce react-beautiful-dnd).
+- Alternative notification libraries (use sonner).
