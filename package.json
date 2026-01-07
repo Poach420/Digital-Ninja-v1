@@ -1,0 +1,11 @@
+{
+  "name": "digital-ninja-app-builder",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -C frontend start",
+    "start": "pnpm -C frontend start",
+    "build": "pnpm -C frontend build",
+    "test": "pnpm -C frontend test"
+  }
+}
