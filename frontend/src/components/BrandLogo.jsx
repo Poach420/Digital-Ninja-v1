@@ -1,18 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const BrandLogo = ({ className = 'h-8 w-8' }) => {
+const BrandLogo = ({ className = 'h-8 w-8 rounded-md' }) => {
+  const [src, setSrc] = useState('/digital-ninja-logo.png'); // user-provided PNG if available
   return (
-    <picture>
-      {/* Prefer user-provided PNG if present */}
-      <source srcSet="/digital-ninja-logo.png" type="image/png" />
-      {/* Fallback SVG we bundle so branding always shows */}
-      <img
-        src="/digital-ninja-logo-fallback.svg"
-        alt="Digital Ninja"
-        className={className}
-        referrerPolicy="no-referrer"
-      />
-    </picture>
+    <img
+      src={src}
+      alt="Digital Ninja"
+      className={className}
+      onError={() => setSrc('/digital-ninja-logo-fallback.svg')}
+    />
   );
 };
 

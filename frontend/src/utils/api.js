@@ -2,14 +2,20 @@ import axios from 'axios';
 
 const envUrl = process.env.REACT_APP_BACKEND_URL;
 
-// Prefer explicit env; else same-origin; else localhost:8000 for local dev
-const inferredBase =
-  envUrl ||
-  (typeof window !== 'undefined' && window.location.origin
-    ? `${window.location.origin}`
-    : 'http://localhost:8000');
+function getDefaultBase() {
+  if (envUrl) return envUrl;
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin || '';
+    // In CRA dev, frontend runs on :3000 while backend runs on :8000
+    if (origin.includes('localhost:3000') || origin.includes('127.0.0.1:3000')) {
+      return 'http://localhost:8000';
+    }
+    return origin || 'http://localhost:8000';
+  }
+  return 'http://localhost:8000';
+}
 
-const BACKEND_URL = inferredBase;
+const BACKEND_URL = getDefaultBase();
 const API = `${BACKEND_URL}/api`;
 
 const api = axios.create({

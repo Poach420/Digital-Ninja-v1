@@ -434,10 +434,17 @@ async def chat_message(req: ChatMessageRequest, current_user: User = Depends(get
 
 app.include_router(api_router)
 
+# Explicit origins are required when allow_credentials is True
+origins_env = os.environ.get('CORS_ORIGINS')
+if origins_env:
+    ALLOW_ORIGINS = [o.strip() for o in origins_env.split(',') if o.strip()]
+else:
+    ALLOW_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=ALLOW_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
