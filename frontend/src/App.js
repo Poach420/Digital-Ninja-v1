@@ -8,6 +8,7 @@ import ProjectEditor from './pages/ProjectEditor';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
+import AiBuilder from './pages/AiBuilder';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<Navigate to="/projects" replace />} />
           <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
           <Route path="/builder" element={<ProtectedRoute><Builder /></ProtectedRoute>} />
+          <Route path="/ai-builder" element={<ProtectedRoute><AiBuilder /></ProtectedRoute>} />
           <Route path="/editor/:projectId" element={<ProtectedRoute><ProjectEditor /></ProtectedRoute>} />
         </Routes>
         <Toaster />

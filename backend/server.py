@@ -97,6 +97,22 @@ class FileUpdate(BaseModel):
     path: str
     content: str
 
+# NEW: Chat models
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: List[ChatMessage] = []
+
+class ChatResponse(BaseModel):
+    response: str
+
+class ChatBuildResponse(BaseModel):
+    response: str
+    file_updates: List[FileUpdate] = []
+
 # ==================== AUTH HELPERS ====================
 
 def create_access_token(data: dict):
@@ -185,6 +201,111 @@ async def login(credentials: UserLogin):
 @api_router.get("/auth/me", response_model=User)
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+# ==================== PROJECT ENDPOINTS ====================
+
+@api_router.post("/projects", response_model=Project)
+async def create_project(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
+    project = Project(
+        project_id=f"project_{uuid.uuid4().hex[:12]}",
+        user_id=current_user.user_id,
+        name=project_data.prompt,
+        description="",
+        prompt=project_data.prompt,
+        tech_stack=project_data.tech_stack,
+        files=[],
+        status="active",
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+
+    project_dict = project.model_dump()
+    project_dict['created_at'] = project_dict['created_at'].isoformat()
+    project_dict['updated_at'] = project_dict['updated_at'].isoformat()
+
+    await db.projects.insert_one(project_dict)
+
+    return project
+
+
+@api_router.get("/projects/{project_id}", response_model=Project)
+async def get_project(project_id: str, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if isinstance(project.get('created_at'), str):
+        project['created_at'] = datetime.fromisoformat(project['created_at'])
+
+    if isinstance(project.get('updated_at'), str):
+        project['updated_at'] = datetime.fromisoformat(project['updated_at'])
+
+    return Project(**project)
+
+
+@api_router.put("/projects/{project_id}/files")
+async def update_file(
+    project_id: str,
+    file_update: FileUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Update the project's files list
+    files = project.get('files', [])
+    files.append({
+        "path": file_update.path,
+        "content": file_update.content
+    })
+
+    project_dict = project.model_dump()
+    project_dict['files'] = files
+    project_dict['updated_at'] = datetime.now(timezone.utc).isoformat()
+
+    await db.projects.update_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"$set": project_dict}
+    )
+
+    return {"message": "File updated successfully", "path": file_update.path}
+
+
+# NEW: Project-scoped chat endpoints
+
+@api_router.post("/projects/{project_id}/chat/plan", response_model=ChatResponse)
+async def project_chat_plan(project_id: str, req: ChatRequest, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Simple, deterministic planning reply; replace with real LLM integration later.
+    plan = (
+        f"I see your project '{project.get('name')}'. "
+        f"Your goal: {req.message}\n"
+        "- Suggestion 1: Outline key pages (Home, About, Contact, FAQ, Products).\n"
+        "- Suggestion 2: Define data models and API endpoints required.\n"
+        "- Suggestion 3: Plan UI components and navigation.\n"
+        "Reply with specifics and I can break it into tasks."
+    )
+    return ChatResponse(response=plan)
+
+
+@api_router.post("/projects/{project_id}/chat/build", response_model=ChatBuildResponse)
+async def project_chat_build(project_id: str, req: ChatRequest, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Stub build reply. In future, generate file_updates from AI.
+    reply = (
+        f"Applying build reasoning for '{project.get('name')}'. "
+        f"Requested change: {req.message}\n"
+        "I can generate specific file updates next. For now, no changes were applied."
+    )
+    return ChatBuildResponse(response=reply, file_updates=[])
+
 
 # ==================== SETUP ====================
 
