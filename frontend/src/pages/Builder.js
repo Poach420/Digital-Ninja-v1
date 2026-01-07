@@ -96,6 +96,7 @@ const Builder = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
+            <img src="/digital-ninja-logo.png" alt="Digital Ninja Logo" className="w-16 h-16 rounded-lg shadow-lg" />
             <div className="w-14 h-14 bg-gradient-to-br from-[#9b00e8] to-[#ff4500] rounded-2xl flex items-center justify-center shadow-lg shadow-[#9b00e8]/50 animate-pulse-slow">
               <Sparkles className="w-8 h-8 text-white" strokeWidth={2.5} />
             </div>

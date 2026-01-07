@@ -41,7 +41,7 @@ const DashboardLayout = ({ children }) => {
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-grow border-r border-border bg-white overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-6 py-5 border-b border-border">
-            <Zap className="h-6 w-6 text-accent" />
+            <img src="/digital-ninja-logo.png" alt="Digital Ninja Logo" className="h-8 w-8 rounded-md object-cover" />
             <span className="ml-2 text-xl font-heading font-bold text-primary">Digital Ninja</span>
           </div>
           <nav className="flex-1 px-3 py-4 space-y-1">
@@ -92,7 +92,7 @@ const DashboardLayout = ({ children }) => {
             <SheetContent side="left" className="w-64 p-0">
               <div className="flex flex-col h-full">
                 <div className="flex items-center flex-shrink-0 px-6 py-5 border-b border-border">
-                  <Zap className="h-6 w-6 text-accent" />
+                  <img src="/digital-ninja-logo.png" alt="Digital Ninja Logo" className="h-8 w-8 rounded-md object-cover" />
                   <span className="ml-2 text-xl font-heading font-bold text-primary">Digital Ninja</span>
                 </div>
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
