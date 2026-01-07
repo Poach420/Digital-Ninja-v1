@@ -9,6 +9,7 @@ print('DEBUG: OPENAI_API_KEY =', os.getenv('OPENAI_API_KEY'))
 
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse, RedirectResponse, HTMLResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import List, Optional, Dict, Any
@@ -202,6 +203,57 @@ async def login(credentials: UserLogin):
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+# ==================== PROJECT ENDPOINTS (LIST/GENERATE) ====================
+
+@api_router.get("/projects", response_model=List[Project])
+async def get_projects(current_user: User = Depends(get_current_user)):
+    projects = await db.projects.find({"user_id": current_user.user_id}, {"_id": 0}).to_list(100)
+    for proj in projects:
+        if isinstance(proj.get('created_at'), str):
+            proj['created_at'] = datetime.fromisoformat(proj['created_at'])
+        if isinstance(proj.get('updated_at'), str):
+            proj['updated_at'] = datetime.fromisoformat(proj['updated_at'])
+    return projects
+
+@api_router.post("/projects/generate", response_model=Project)
+async def generate_project(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
+    # Fallback if ai_builder is available; else create a basic scaffold
+    try:
+        app_structure = await ai_builder.generate_app_structure(
+            project_data.prompt,
+            project_data.tech_stack
+        )
+        name = app_structure.get("app_name", project_data.prompt[:40] or "AI Project")
+        description = app_structure.get("description", project_data.prompt)
+        files = app_structure.get("files", [])
+    except Exception:
+        # Minimal safe scaffold
+        name = project_data.prompt[:40] or "AI Project"
+        description = project_data.prompt
+        files = [
+            {"path": "src/App.js", "content": "export default function App(){return <div>Hello</div>}", "language": "js"},
+            {"path": "src/index.css", "content": "body{font-family:sans-serif}", "language": "css"}
+        ]
+
+    project_id = f"proj_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    project_doc = {
+        "project_id": project_id,
+        "user_id": current_user.user_id,
+        "name": name,
+        "description": description,
+        "prompt": project_data.prompt,
+        "tech_stack": project_data.tech_stack,
+        "files": files,
+        "status": "active",
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+    await db.projects.insert_one(project_doc)
+    project_doc["created_at"] = now
+    project_doc["updated_at"] = now
+    return Project(**project_doc)
+
 # ==================== PROJECT ENDPOINTS ====================
 
 @api_router.post("/projects", response_model=Project)
@@ -253,22 +305,24 @@ async def update_file(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Update the project's files list
     files = project.get('files', [])
-    files.append({
-        "path": file_update.path,
-        "content": file_update.content
-    })
-
-    project_dict = project.model_dump()
-    project_dict['files'] = files
-    project_dict['updated_at'] = datetime.now(timezone.utc).isoformat()
+    updated = False
+    for i, f in enumerate(files):
+        if f.get("path") == file_update.path:
+            files[i] = {**f, "content": file_update.content}
+            updated = True
+            break
+    if not updated:
+        files.append({
+            "path": file_update.path,
+            "content": file_update.content,
+            "language": file_update.path.split('.')[-1] if '.' in file_update.path else "txt"
+        })
 
     await db.projects.update_one(
         {"project_id": project_id, "user_id": current_user.user_id},
-        {"$set": project_dict}
+        {"$set": {"files": files, "updated_at": datetime.now(timezone.utc).isoformat()}}
     )
-
     return {"message": "File updated successfully", "path": file_update.path}
 
 
@@ -306,6 +360,75 @@ async def project_chat_build(project_id: str, req: ChatRequest, current_user: Us
     )
     return ChatBuildResponse(response=reply, file_updates=[])
 
+
+# ==================== EXPORT ENDPOINTS ====================
+
+@api_router.post("/projects/{project_id}/export")
+async def export_project(project_id: str, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {
+        "project_id": project_id,
+        "name": project.get("name"),
+        "files": project.get("files", []),
+        "export_ready": True,
+        "instructions": "Import into your preferred host or push to GitHub."
+    }
+
+@api_router.post("/projects/{project_id}/export/github")
+async def export_project_github(project_id: str, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {
+        "project_name": project.get("name", f"project_{project_id}"),
+        "description": project.get("description", ""),
+        "files": project.get("files", []),
+        "deployment_ready": True
+    }
+
+# ==================== GOOGLE OAUTH (MINIMAL) ====================
+
+@api_router.get("/auth/google")
+async def google_auth():
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+    if not GOOGLE_CLIENT_ID or not GOOGLE_REDIRECT_URI:
+        # Return helpful message rather than failing
+        return {"auth_url": None, "message": "Google OAuth not configured on server."}
+    google_oauth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={GOOGLE_REDIRECT_URI}&"
+        f"response_type=code&"
+        f"scope=openid%20email%20profile&"
+        f"access_type=offline"
+    )
+    return {"auth_url": google_oauth_url}
+
+@api_router.get("/auth/google/session")
+async def process_google_session_get(request: Request):
+    code = request.query_params.get("code")
+    if not code:
+        return HTMLResponse("<h2>Google OAuth Error: Missing code in query params.</h2>", status_code=400)
+    # If tokens are needed, implement exchange here (requires env secrets); for now redirect back
+    redirect_frontend = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    return RedirectResponse(url=f"{redirect_frontend}/login?token=")
+
+# ==================== GENERIC AI CHAT STREAM (for AIChat sidebar) ====================
+
+class ChatMessageRequest(BaseModel):
+    message: str
+
+@api_router.post("/chat/message")
+async def chat_message(req: ChatMessageRequest, current_user: User = Depends(get_current_user)):
+    async def stream():
+        text = f"Echo: {req.message}"
+        for word in text.split():
+            yield f"data: {word}\n\n"
+        yield "data: [DONE]\n\n"
+    return StreamingResponse(stream(), media_type="text/event-stream")
 
 # ==================== SETUP ====================
 

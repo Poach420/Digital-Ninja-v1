@@ -7,6 +7,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { toast } from 'sonner';
 import api, { API } from '../utils/api';
 import { Mail, Lock, User, Zap } from 'lucide-react';
+import BrandLogo from '../components/BrandLogo';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const Register = () => {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
-              <Zap className="h-8 w-8 text-accent" />
+              <BrandLogo className="h-8 w-8 rounded-md" />
               <h1 className="text-3xl font-heading font-bold tracking-tight text-primary">Digital Ninja</h1>
             </div>
             <h2 className="text-2xl font-heading font-semibold tracking-tight text-primary">Create your account</h2>

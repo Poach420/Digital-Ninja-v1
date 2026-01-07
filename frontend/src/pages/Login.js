@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { toast } from 'sonner';
 import api, { API } from '../utils/api';
 import { Mail, Lock, Zap } from 'lucide-react';
+import BrandLogo from '../components/BrandLogo';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const Login = () => {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
-              <Zap className="h-8 w-8 text-accent" />
+              <BrandLogo className="h-8 w-8 rounded-md" />
               <h1 className="text-3xl font-heading font-bold tracking-tight text-primary">Digital Ninja</h1>
             </div>
             <h2 className="text-2xl font-heading font-semibold tracking-tight text-primary">Sign in to your account</h2>
@@ -151,7 +152,7 @@ const Login = () => {
 
       <div className="relative hidden w-0 flex-1 lg:block">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-slate-800">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZoLTJ6bTAtNGgydjJoLTJ2LTJ6bTAgNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZoLTJ6bTAtNGgydjJoLTJ2LTJ6bTAgNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
           <div className="absolute inset-0 flex items-center justify-center p-12">
             <div className="max-w-md text-white">
               <h2 className="text-4xl font-heading font-bold mb-4">Build Apps Like a Ninja</h2>

@@ -1,6 +1,15 @@
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const envUrl = process.env.REACT_APP_BACKEND_URL;
+
+// Prefer explicit env; else same-origin; else localhost:8000 for local dev
+const inferredBase =
+  envUrl ||
+  (typeof window !== 'undefined' && window.location.origin
+    ? `${window.location.origin}`
+    : 'http://localhost:8000');
+
+const BACKEND_URL = inferredBase;
 const API = `${BACKEND_URL}/api`;
 
 const api = axios.create({
