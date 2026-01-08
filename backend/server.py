@@ -13,9 +13,9 @@ from fastapi.responses import StreamingResponse, RedirectResponse, HTMLResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timezone, timedelta
-from passlib.context import CryptContext
-from jose import JWTError, jwt
+# add base64 and httpx for GitHub API calls
+import base64
+import httpx
 from pathlib import Path
 import uuid
 import logging
@@ -456,3 +456,93 @@ async def shutdown_db_client():
 @app.get("/")
 async def root():
     return {"message": "AI Application Builder API", "version": "1.0.0"}
+
+# ==================== GitHub Push Endpoint ====================
+
+class GitHubPushRequest(BaseModel):
+    token: str
+    owner: str
+    repo: str
+    branch: Optional[str] = "main"
+    commit_message: Optional[str] = "Push from Digital Ninja"
+    include_paths: Optional[List[str]] = None
+
+IGNORE_DIRS = {".git", "node_modules", "build", "dist", ".next", ".cache", ".turbo", ".pytest_cache", "__pycache__"}
+IGNORE_FILES = {".DS_Store", "yarn.lock", "package-lock.json"}
+
+def should_skip(path: Path) -> bool:
+    name = path.name
+    if name in IGNORE_FILES:
+      return True
+    parts = path.parts
+    return any(part in IGNORE_DIRS for part in parts)
+
+async def github_file_sha(client: httpx.AsyncClient, owner: str, repo: str, path: str, branch: Optional[str], headers: Dict[str, str]) -> Optional[str]:
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    params = {"ref": branch} if branch else {}
+    r = await client.get(url, headers=headers, params=params)
+    if r.status_code == 200:
+        data = r.json()
+        return data.get("sha")
+    return None
+
+async def github_put_file(client: httpx.AsyncClient, owner: str, repo: str, path: str, content_b64: str, message: str, branch: Optional[str], sha: Optional[str], headers: Dict[str, str]) -> bool:
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    payload = {"message": message, "content": content_b64}
+    if branch:
+        payload["branch"] = branch
+    if sha:
+        payload["sha"] = sha
+    r = await client.put(url, headers=headers, json=payload)
+    if r.status_code in (200, 201):
+        return True
+    # Fallback: if branch caused failure on empty repo, try without branch once
+    if r.status_code == 422 and branch:
+        r2 = await client.put(url, headers=headers, json={"message": message, "content": content_b64})
+        return r2.status_code in (200, 201)
+    return False
+
+@api_router.post("/github/push")
+async def push_github(req: GitHubPushRequest, current_user: User = Depends(get_current_user)):
+    if not req.token or not req.owner or not req.repo:
+        raise HTTPException(status_code=400, detail="Missing token/owner/repo")
+    project_root = Path(__file__).resolve().parents[1]  # repository root
+    include = req.include_paths or ["frontend", "backend", "package.json", "pnpm-workspace.yaml", "docker-compose.yml", "README.md", "README_FINAL.md", "render.yaml", "vercel.json", ".gitignore"]
+
+    files_to_push: List[Path] = []
+    for p in include:
+        target = (project_root / p).resolve()
+        if target.is_file():
+            if not should_skip(target):
+                files_to_push.append(target)
+        elif target.is_dir():
+            for path in target.rglob("*"):
+                if path.is_file() and not should_skip(path):
+                    files_to_push.append(path)
+
+    if not files_to_push:
+        raise HTTPException(status_code=400, detail="No files found to push")
+
+    headers = {
+        "Authorization": f"token {req.token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "digital-ninja-app-builder"
+    }
+
+    pushed = 0
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        for fpath in files_to_push:
+            rel = str(fpath.relative_to(project_root)).replace("\\", "/")
+            try:
+                data = fpath.read_bytes()
+                content_b64 = base64.b64encode(data).decode("utf-8")
+                sha = await github_file_sha(client, req.owner, req.repo, rel, req.branch, headers)
+                ok = await github_put_file(client, req.owner, req.repo, rel, content_b64, req.commit_message, req.branch, sha, headers)
+                if ok:
+                    pushed += 1
+                else:
+                    logging.error(f"Failed to push {rel}")
+            except Exception as e:
+                logging.error(f"Error pushing {rel}: {e}")
+
+    return {"message": "Push completed", "files_pushed": pushed, "repo": f"{req.owner}/{req.repo}", "branch": req.branch or "default"}

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import api from '../utils/api';
 import { Plus, Code2, Calendar, Sparkles, LogOut } from 'lucide-react';
 import { isDevAuthEnabled } from '../utils/devAuth';
+import GitHubPushDialog from '../components/GitHubPushDialog';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -78,6 +79,12 @@ const Projects = () => {
             <p className="text-slate-400">Welcome back, {user.name}</p>
           </div>
           <div className="flex gap-3">
+            <GitHubPushDialog
+              trigger={<Button variant="outline" className="text-white border-slate-600">Push to GitHub</Button>}
+              defaultOwner="Poach420"
+              defaultRepo="Digital-Ninja-v1"
+              defaultBranch="main"
+            />
             <Button onClick={() => navigate('/ai-builder')} variant="outline" className="text-white border-slate-600" data-testid="open-ai-builder">
               Open AI Builder
             </Button>
