@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { X, Send, Sparkles } from 'lucide-react';
 import { BACKEND_URL } from '../utils/api';
+import { isDevAuthEnabled } from '../utils/devAuth';
 
 const AIChat = ({ onClose }) => {
   const [messages, setMessages] = useState([
@@ -20,6 +21,22 @@ const AIChat = ({ onClose }) => {
     }
   }, [messages]);
 
+  const devStream = (text) => {
+    const words = (`Dev reply: ${text}`).split(' ');
+    let idx = 0;
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+    const interval = setInterval(() => {
+      idx += 1;
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const assembled = words.slice(0, idx).join(' ');
+        newMessages[newMessages.length - 1] = { role: 'assistant', content: assembled };
+        return newMessages;
+      });
+      if (idx >= words.length) clearInterval(interval);
+    }, 40);
+  };
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
@@ -34,10 +51,16 @@ const AIChat = ({ onClose }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ message: userMessage }),
       });
+
+      // If backend not reachable or unauthorized, use dev fallback
+      if (!response.ok && isDevAuthEnabled()) {
+        devStream(userMessage);
+        return;
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -55,9 +78,7 @@ const AIChat = ({ onClose }) => {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
-            if (data === '[DONE]') {
-              break;
-            }
+            if (data === '[DONE]') break;
             if (data.trim()) {
               assistantMessage += (assistantMessage ? ' ' : '') + data.trim();
               setMessages((prev) => {
@@ -73,11 +94,15 @@ const AIChat = ({ onClose }) => {
         }
       }
     } catch (error) {
-      console.error('Chat error:', error);
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' },
-      ]);
+      if (isDevAuthEnabled()) {
+        devStream(userMessage);
+      } else {
+        console.error('Chat error:', error);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' },
+        ]);
+      }
     } finally {
       setLoading(false);
     }

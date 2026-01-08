@@ -8,6 +8,7 @@ import api from '../utils/api';
 import { Plus, Code2, Calendar, Sparkles, LogOut } from 'lucide-react';
 import { isDevAuthEnabled } from '../utils/devAuth';
 import GitHubPushDialog from '../components/GitHubPushDialog';
+import BrandLogo from '../components/BrandLogo';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -28,7 +29,6 @@ const Projects = () => {
     } catch (error) {
       console.error('Failed to load projects:', error);
       if (isDevAuthEnabled()) {
-        // Provide a demo project so you can enter the editor/builder
         setProjects([{
           project_id: 'demo_project',
           user_id: 'dev_user',
@@ -74,9 +74,12 @@ const Projects = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-heading font-bold text-white mb-2">Your Projects</h1>
-            <p className="text-slate-400">Welcome back, {user.name}</p>
+          <div className="flex items-center gap-3">
+            <BrandLogo className="h-10 w-10 rounded-lg shadow-lg" />
+            <div>
+              <h1 className="text-4xl font-heading font-bold text-white mb-2">Your Projects</h1>
+              <p className="text-slate-400">Welcome back, {user.name}</p>
+            </div>
           </div>
           <div className="flex gap-3">
             <GitHubPushDialog
