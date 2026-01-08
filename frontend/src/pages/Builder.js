@@ -118,10 +118,9 @@ export default function App(){
         const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
         cache[localId] = demoProject;
         localStorage.setItem('dev_projects', JSON.stringify(cache));
+        setCurrentProjectId(localId);
         toast.success(wantsCalculator ? 'Local calculator created' : 'Local demo project created');
-        setShowLogger(false);
-        setGenerating(false);
-        navigate(`/editor/${localId}`);
+        // Keep logger visible; onComplete will navigate to the editor
         return;
       }
       toast.error(error.response?.data?.detail || 'Failed to generate project');

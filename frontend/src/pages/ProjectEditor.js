@@ -8,6 +8,7 @@ import LivePreview from '../components/LivePreview';
 import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff, Github, MessageSquare, Hammer } from 'lucide-react';
 import { isDevAuthEnabled } from '../utils/devAuth';
 import AIChat from '../components/AIChat';
+import BrandLogo from '../components/BrandLogo';
 
 const ProjectEditor = () => {
   const { projectId } = useParams();
@@ -208,6 +209,7 @@ const ProjectEditor = () => {
             <Home className="h-4 w-4 mr-2" />Projects
           </Button>
           <div className="h-6 w-px bg-slate-700" />
+          <BrandLogo className="h-6 w-6 rounded-md" />
           <div>
             <h1 className="text-xl font-heading font-bold text-white">{project.name}</h1>
             <p className="text-sm text-slate-400">{project.description}</p>
