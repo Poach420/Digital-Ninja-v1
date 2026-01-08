@@ -9,6 +9,8 @@ import api from '../utils/api';
 import { Sparkles, Loader2 } from 'lucide-react';
 import GenerationLogger from '../components/GenerationLogger';
 import BrandLogo from '../components/BrandLogo';
+import { isDevAuthEnabled } from '../utils/devAuth';
+import { BACKEND_URL } from '../utils/api';
 
 const Builder = () => {
   const navigate = useNavigate();
@@ -43,6 +45,33 @@ const Builder = () => {
       // Logger will handle navigation after completion
     } catch (error) {
       console.error('Generation error:', error);
+      if (isDevAuthEnabled()) {
+        // Dev fallback: create local demo project and open editor
+        const localId = `dev_${Date.now().toString(36)}`;
+        const demoProject = {
+          project_id: localId,
+          user_id: 'dev_user',
+          name: prompt.trim().slice(0, 40) || 'Demo App',
+          description: prompt.trim(),
+          prompt: prompt.trim(),
+          tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
+          files: [
+            { path: 'src/App.js', content: 'export default function App(){return <div style={{padding:20}}><h1>Demo App</h1><p>Generated locally: ' + prompt.trim().replace(/"/g, '\\"') + '</p></div>}', language: 'js' },
+            { path: 'src/index.css', content: 'body{font-family:sans-serif}', language: 'css' },
+          ],
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
+        cache[localId] = demoProject;
+        localStorage.setItem('dev_projects', JSON.stringify(cache));
+        toast.success('Local demo project created');
+        setShowLogger(false);
+        setGenerating(false);
+        navigate(`/editor/${localId}`);
+        return;
+      }
       toast.error(error.response?.data?.detail || 'Failed to generate project');
       setShowLogger(false);
       setGenerating(false);
@@ -64,21 +93,65 @@ const Builder = () => {
     }
 
     const userMessage = prompt.trim();
-    setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+    // Use unique key to avoid duplicate key warnings
+    setChatHistory(prev => [...prev, { role: 'user', content: userMessage, _k: Date.now() + Math.random() }]);
     setPrompt('');
     setChatting(true);
 
     try {
-      const response = await api.post('/chat', {
-        message: userMessage,
-        history: chatHistory
+      // Stream from backend if available
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${BACKEND_URL}/api/chat/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ message: userMessage })
       });
 
-      setChatHistory(prev => [...prev, { role: 'assistant', content: response.data.response }]);
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = '';
+
+      // Push empty assistant message first (for streaming)
+      setChatHistory(prev => [...prev, { role: 'assistant', content: '', _k: Date.now() + Math.random() }]);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') break;
+              if (data) {
+                assistantMessage += (assistantMessage ? ' ' : '') + data;
+                setChatHistory(prev => {
+                  const arr = [...prev];
+                  arr[arr.length - 1] = { role: 'assistant', content: assistantMessage, _k: arr[arr.length - 1]._k };
+                  return arr;
+                });
+              }
+            }
+          }
+        }
+      } else {
+        // Non-streaming fallback
+        const json = await res.json().catch(() => null);
+        const content = (json && json.message) ? `Echo: ${json.message}` : 'Response received.';
+        setChatHistory(prev => [...prev, { role: 'assistant', content, _k: Date.now() + Math.random() }]);
+      }
     } catch (error) {
       console.error('Chat error:', error);
-      toast.error('Failed to get response');
-      setChatHistory(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+      if (isDevAuthEnabled()) {
+        setChatHistory(prev => [...prev, { role: 'assistant', content: 'Dev reply: your request was processed locally.', _k: Date.now() + Math.random() }]);
+      } else {
+        toast.error('Failed to get response');
+        setChatHistory(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.', _k: Date.now() + Math.random() }]);
+      }
     } finally {
       setChatting(false);
     }

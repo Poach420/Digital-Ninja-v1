@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import api from '../utils/api';
 import LivePreview from '../components/LivePreview';
 import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff, Github } from 'lucide-react';
+import { isDevAuthEnabled } from '../utils/devAuth';
 
 const ProjectEditor = () => {
   const { projectId } = useParams();
@@ -30,8 +31,41 @@ const ProjectEditor = () => {
         selectFile(response.data.files[0]);
       }
     } catch (error) {
-      toast.error('Failed to load project');
-      navigate('/projects');
+      if (isDevAuthEnabled()) {
+        // Dev fallback: load from local cache or synthesize demo
+        const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
+        const localProj = cache[projectId];
+        if (localProj) {
+          setProject(localProj);
+          if (localProj.files.length > 0) selectFile(localProj.files[0]);
+          toast.success('Loaded local demo project');
+        } else if (projectId === 'demo_project') {
+          const demo = {
+            project_id: 'demo_project',
+            user_id: 'dev_user',
+            name: 'Demo App',
+            description: 'Sample project for preview',
+            prompt: 'Demo app preview',
+            tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
+            files: [
+              { path: 'src/App.js', content: 'export default function App(){return <div style={{padding:20}}><h1>Demo App</h1><p>Hello from Digital Ninja.</p></div>}', language: 'js' },
+              { path: 'src/index.css', content: 'body{font-family:sans-serif}', language: 'css' },
+            ],
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setProject(demo);
+          selectFile(demo.files[0]);
+          toast.success('Loaded built-in demo project');
+        } else {
+          toast.error('Failed to load project (dev mode)');
+          navigate('/projects');
+        }
+      } else {
+        toast.error('Failed to load project');
+        navigate('/projects');
+      }
     } finally {
       setLoading(false);
     }
@@ -52,13 +86,26 @@ const ProjectEditor = () => {
       });
       setProject(prev => ({
         ...prev,
-        files: prev.files.map(f => 
+        files: prev.files.map(f =>
           f.path === selectedFile.path ? { ...f, content: fileContent } : f
         )
       }));
       toast.success('File saved');
     } catch (error) {
-      toast.error('Save failed');
+      if (isDevAuthEnabled()) {
+        // Save to local cache
+        const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
+        const current = cache[projectId] || project;
+        const updatedFiles = (current.files || []).map(f =>
+          f.path === selectedFile.path ? { ...f, content: fileContent } : f
+        );
+        cache[projectId] = { ...(current || {}), files: updatedFiles, updated_at: new Date().toISOString() };
+        localStorage.setItem('dev_projects', JSON.stringify(cache));
+        setProject(prev => ({ ...prev, files: updatedFiles }));
+        toast.success('Saved locally');
+      } else {
+        toast.error('Save failed');
+      }
     } finally {
       setSaving(false);
     }
@@ -126,7 +173,7 @@ const ProjectEditor = () => {
       toast.error('GitHub export failed');
     }
   };
-
+  
 
   const handleDelete = async () => {
     if (!confirm('Delete this project?')) return;
