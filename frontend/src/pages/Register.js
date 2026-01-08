@@ -5,8 +5,8 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent } from '../components/ui/card';
 import { toast } from 'sonner';
-import api, { API } from '../utils/api';
-import { Mail, Lock, User, Zap } from 'lucide-react';
+import api from '../utils/api';
+import { Mail, Lock, User } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
 import { isDevAuthEnabled, devSignIn } from '../utils/devAuth';
 
@@ -61,32 +61,33 @@ const Register = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <BrandLogo className="h-8 w-8 rounded-md" />
-              <h1 className="text-3xl font-heading font-bold tracking-tight text-primary">Digital Ninja</h1>
-            </div>
-            <h2 className="text-2xl font-heading font-semibold tracking-tight text-primary">Create your account</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Start building amazing apps today</p>
+    <div className="min-h-screen relative bg-gradient-to-br from-[#0b0b0d] via-[#0f172a] to-[#1a1030]">
+      <div className="absolute inset-0 pointer-events-none opacity-10"
+           style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #9b00e8 0%, transparent 25%), radial-gradient(circle at 80% 30%, #ff4500 0%, transparent 25%)' }} />
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="flex flex-col items-center mb-6">
+            <BrandLogo className="h-14 w-14 rounded-lg shadow-lg" />
+            <h1 className="mt-3 text-3xl font-heading font-bold bg-gradient-to-r from-[#9b00e8] via-[#ff4500] to-[#9b00e8] bg-clip-text text-transparent">
+              Digital Ninja
+            </h1>
+            <p className="mt-1 text-sm text-slate-300">Join thousands building with stealth and precision</p>
           </div>
 
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-white/10 bg-white/5 backdrop-blur-md shadow-xl">
             <CardContent className="pt-6">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name" className="text-slate-200">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="name"
                       type="text"
                       placeholder="John Doe"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg:white/5 bg-white/5 border-slate-600 text-white placeholder:text-slate-400"
                       required
                       data-testid="name-input"
                     />
@@ -94,16 +95,16 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-slate-200">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-white/5 border-slate-600 text-white placeholder:text-slate-400"
                       required
                       data-testid="email-input"
                     />
@@ -111,39 +112,39 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-slate-200">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="password"
                       type="password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-white/5 border-slate-600 text-white placeholder:text-slate-400"
                       required
                       minLength={6}
                       data-testid="password-input"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">Must be at least 6 characters</p>
+                  <p className="text-xs text-slate-400">Must be at least 6 characters</p>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading} data-testid="register-button">
+                <Button type="submit" className="w-full bg-gradient-to-r from-[#9b00e8] to-[#ff4500] hover:from-[#8800d4] hover:to-[#e63e00]" disabled={loading} data-testid="register-button">
                   {loading ? 'Creating account...' : 'Create account'}
                 </Button>
               </form>
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t"></div>
+                  <div className="w-full border-t border-white/10"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-transparent px-2 text-slate-400">Or continue with</span>
                 </div>
               </div>
 
-              <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignup} data-testid="google-signup-button">
+              <Button type="button" variant="outline" className="w-full border-slate-600 text-white hover:bg-white/10" onClick={handleGoogleSignup} data-testid="google-signup-button">
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -153,40 +154,14 @@ const Register = () => {
                 Sign up with Google
               </Button>
 
-              <p className="mt-6 text-center text-sm text-muted-foreground">
+              <p className="mt-6 text-center text-sm text-slate-400">
                 Already have an account?{' '}
-                <Link to="/login" className="font-medium text-accent hover:text-accent/80">
+                <Link to="/login" className="font-medium text-white hover:underline">
                   Sign in
                 </Link>
               </p>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
-      <div className="relative hidden w-0 flex-1 lg:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-slate-800">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZoLTJ6bTAtNGgydjJoLTJ2LTJ6bTAgNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
-          <div className="absolute inset-0 flex items-center justify-center p-12">
-            <div className="max-w-md text-white">
-              <h2 className="text-4xl font-heading font-bold mb-4">Join Our Community</h2>
-              <p className="text-xl text-slate-200 mb-8">Thousands of developers are already building with Digital Ninja.</p>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-3xl font-bold mb-1">10K+</div>
-                  <div className="text-sm text-slate-300">Users</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold mb-1">50K+</div>
-                  <div className="text-sm text-slate-300">Pages Built</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold mb-1">99.9%</div>
-                  <div className="text-sm text-slate-300">Uptime</div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ const DashboardLayout = ({ children }) => {
         <div className="flex flex-col flex-grow border-r border-border bg-white overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-6 py-5 border-b border-border">
             <BrandLogo className="h-8 w-8 rounded-md object-cover" />
-            <span className="ml-2 text-xl font-heading font-bold text-primary">Digital Ninja</span>
+            <span className="ml-2 text-xl font-heading font-bold bg-gradient-to-r from-[#9b00e8] via-[#ff4500] to-[#9b00e8] bg-clip-text text-transparent">Digital Ninja</span>
           </div>
           <nav className="flex-1 px-3 py-4 space-y-1">
             {navigation.map((item) => {
@@ -94,7 +94,7 @@ const DashboardLayout = ({ children }) => {
               <div className="flex flex-col h-full">
                 <div className="flex items-center flex-shrink-0 px-6 py-5 border-b border-border">
                   <BrandLogo className="h-8 w-8 rounded-md object-cover" />
-                  <span className="ml-2 text-xl font-heading font-bold text-primary">Digital Ninja</span>
+                  <span className="ml-2 text-xl font-heading font-bold bg-gradient-to-r from-[#9b00e8] via-[#ff4500] to-[#9b00e8] bg-clip-text text-transparent">Digital Ninja</span>
                 </div>
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                   {navigation.map((item) => {

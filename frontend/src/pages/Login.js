@@ -3,17 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { toast } from 'sonner';
-import api, { API } from '../utils/api';
-import { Mail, Lock, Zap } from 'lucide-react';
+import api from '../utils/api';
+import { Mail, Lock } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
 import { isDevAuthEnabled, devSignIn } from '../utils/devAuth';
 
 const Login = () => {
   const navigate = useNavigate();
 
-  // Handle token in URL (Google OAuth)
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
@@ -23,6 +22,7 @@ const Login = () => {
       navigate('/projects');
     }
   }, [navigate]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -71,32 +71,33 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-6">
-              <BrandLogo className="h-8 w-8 rounded-md" />
-              <h1 className="text-3xl font-heading font-bold tracking-tight text-primary">Digital Ninja</h1>
-            </div>
-            <h2 className="text-2xl font-heading font-semibold tracking-tight text-primary">Sign in to your account</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Build incredible apps with stealth and precision</p>
+    <div className="min-h-screen relative bg-gradient-to-br from-[#0b0b0d] via-[#0f172a] to-[#1a1030]">
+      <div className="absolute inset-0 pointer-events-none opacity-10"
+           style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #9b00e8 0%, transparent 25%), radial-gradient(circle at 80% 30%, #ff4500 0%, transparent 25%)' }} />
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="flex flex-col items-center mb-6">
+            <BrandLogo className="h-14 w-14 rounded-lg shadow-lg" />
+            <h1 className="mt-3 text-3xl font-heading font-bold bg-gradient-to-r from-[#9b00e8] via-[#ff4500] to-[#9b00e8] bg-clip-text text-transparent">
+              Digital Ninja
+            </h1>
+            <p className="mt-1 text-sm text-slate-300">Build incredible apps with stealth and precision</p>
           </div>
 
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-white/10 bg-white/5 backdrop-blur-md shadow-xl">
             <CardContent className="pt-6">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-slate-200">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-white/5 border-slate-600 text-white placeholder:text-slate-400"
                       required
                       data-testid="email-input"
                     />
@@ -104,40 +105,40 @@ const Login = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-slate-200">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="password"
                       type="password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-white/5 border-slate-600 text-white placeholder:text-slate-400"
                       required
                       data-testid="password-input"
                     />
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading} data-testid="login-button">
+                <Button type="submit" className="w-full bg-gradient-to-r from-[#9b00e8] to-[#ff4500] hover:from-[#8800d4] hover:to-[#e63e00]" disabled={loading} data-testid="login-button">
                   {loading ? 'Signing in...' : 'Sign in'}
                 </Button>
               </form>
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t"></div>
+                  <div className="w-full border-t border-white/10"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-transparent px-2 text-slate-400">Or continue with</span>
                 </div>
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full border-slate-600 text-white hover:bg-white/10"
                 onClick={handleGoogleLogin}
                 data-testid="google-login-button"
               >
@@ -150,61 +151,14 @@ const Login = () => {
                 Sign in with Google
               </Button>
 
-              <p className="mt-6 text-center text-sm text-muted-foreground">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-accent hover:text-accent/80">
+              <p className="mt-6 text-center text-sm text-slate-400">
+                Don&apos;t have an account?{' '}
+                <Link to="/register" className="font-medium text-white hover:underline">
                   Sign up
                 </Link>
               </p>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
-      <div className="relative hidden w-0 flex-1 lg:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-slate-800">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZoLTJ6bTAtNGgydjJoLTJ2LTJ6bTAgNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
-          <div className="absolute inset-0 flex items-center justify-center p-12">
-            <div className="max-w-md text-white">
-              <h2 className="text-4xl font-heading font-bold mb-4">Build Apps Like a Ninja</h2>
-              <p className="text-xl text-slate-200 mb-8">Fast, precise, invisible. Create stunning applications with our advanced builder platform.</p>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Drag & Drop Builder</h3>
-                    <p className="text-sm text-slate-300">Create pages visually with our intuitive interface</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">AI Assistant</h3>
-                    <p className="text-sm text-slate-300">Get help from our intelligent chatbot</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Team Collaboration</h3>
-                    <p className="text-sm text-slate-300">Work together with role-based access</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
