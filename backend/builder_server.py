@@ -28,6 +28,7 @@ if not mongo_url or not db_name:
     print('MONGO_URL:', mongo_url)
     print('DB_NAME:', db_name)
     sys.exit(1)
+
 try:
     print(f'Attempting MongoDB connection to: {mongo_url}, DB: {db_name}')
     client = AsyncIOMotorClient(mongo_url)
@@ -37,11 +38,7 @@ except Exception as e:
     print(f'Failed to connect to MongoDB: {e}')
     sys.exit(1)
 
-
-# Add MongoDB connection test to FastAPI startup event (must be after app is defined)
-
-# ...existing code...
-
+# Add MongoDB connection test to FastAPI startup event
 app = FastAPI(title="AI Application Builder")
 api_router = APIRouter(prefix="/api")
 
@@ -54,9 +51,6 @@ async def test_mongo_connection():
         print(f"MongoDB connection failed: {e}")
         raise
 
-app = FastAPI(title="AI Application Builder")
-api_router = APIRouter(prefix="/api")
-
 # --- Strict CORS config ---
 from starlette.middleware.cors import CORSMiddleware
 frontend_origin = os.environ.get('CORS_ORIGINS', 'http://localhost:3000')
@@ -65,6 +59,7 @@ if isinstance(frontend_origin, str) and frontend_origin.startswith('['):
     frontend_origin = ast.literal_eval(frontend_origin)
 elif isinstance(frontend_origin, str):
     frontend_origin = [o.strip() for o in frontend_origin.split(',') if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -74,7 +69,6 @@ app.add_middleware(
 )
 
 # ==================== MODELS ====================
-
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     user_id: str
@@ -138,11 +132,9 @@ class ChatBuildResponse(BaseModel):
     file_updates: List[FileUpdate] = []
 
 # ==================== AUTH HELPERS ====================
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 JWT_SECRET = os.getenv("JWT_SECRET", "your-jwt-secret-key")
 JWT_ALGORITHM = "HS256"
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -180,7 +172,6 @@ async def get_current_user(request: Request) -> User:
     return User(**{k: v for k, v in user_doc.items() if k != 'password_hash'})
 
 # ==================== AUTH ENDPOINTS ====================
-
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
     existing = await db.users.find_one({"email": user_data.email})
@@ -220,7 +211,6 @@ async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 # ==================== GOOGLE OAUTH ENDPOINTS ====================
-
 @api_router.get("/auth/google")
 async def google_auth(request: Request):
     """Initiate Google OAuth flow"""
@@ -235,7 +225,6 @@ async def google_auth(request: Request):
         f"access_type=offline"
     )
     return {"auth_url": google_oauth_url}
-
 
 # POST handler (for API clients)
 @api_router.post("/auth/google/session")
@@ -320,7 +309,6 @@ async def process_google_oauth_code(code: str):
         return {"access_token": jwt_token, "user": user_doc}
 
 # ==================== PROJECT ENDPOINTS ====================
-
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(current_user: User = Depends(get_current_user)):
     projects = await db.projects.find({"user_id": current_user.user_id}, {"_id": 0}).to_list(100)
@@ -358,28 +346,8 @@ async def generate_project(project_data: ProjectCreate, current_user: User = Dep
         # Deterministic fallback that renders well in our preview
         wants_calc = re.search(r"\b(calc|calculator|arithmetic|add|subtract|multiply|divide)\b", project_data.prompt or "", re.I)
         app_js = (
-            """export default function App(){
-  const [a,setA]=React.useState(''); const [b,setB]=React.useState(''); const [op,setOp]=React.useState('+');
-  const calc=(x,y,o)=>{const A=parseFloat(x),B=parseFloat(y); if(Number.isNaN(A)||Number.isNaN(B))return ''; switch(o){case '+':return A+B;case '-':return A-B;case '*':return A*B;case '/':return B!==0?A/B:'∞';default:return ''}};
-  const res=calc(a,b,op);
-  return (<div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}>
-    <header style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
-      <div style={{width:12,height:12,borderRadius:999,background:'#20d6ff'}}></div>
-      <h1 style={{margin:0,background:'linear-gradient(90deg,#20d6ff,#46ff9b)',WebkitBackgroundClip:'text',color:'transparent'}}>Digital Ninja Calculator</h1>
-    </header>
-    <div style={{display:'grid',gap:12,maxWidth:480,background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:12,padding:16}}>
-      <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} />
-      <select value={op} onChange={e=>setOp(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}}>
-        <option value="+">Add (+)</option><option value="-">Subtract (-)</option><option value="*">Multiply (*)</option><option value="/">Divide (/)</option>
-      </select>
-      <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} />
-      <div style={{padding:12,background:'#0f172a',border:'1px solid #334155',borderRadius:8}}>
-        <strong style={{color:'#20d6ff'}}>Result:</strong> <span style={{marginLeft:8}}>{String(res)}</span>
-      </div>
-    </div>
-  </div>);}
-""" if wants_calc else
-            f"""export default function App(){{return <div style={{padding:24,fontFamily:'system-ui'}}><h1>Demo App</h1><p>Generated locally: {(project_data.prompt or '').replace('"','\\"')}</p></div>;}}"""
+            """export default function App(){ const [a,setA]=React.useState(''); const [b,setB]=React.useState(''); const [op,setOp]=React.useState('+'); const calc=(x,y,o)=>{const A=parseFloat(x),B=parseFloat(y); if(Number.isNaN(A)||Number.isNaN(B))return ''; switch(o){case '+':return A+B;case '-':return A-B;case '*':return A*B;case '/':return B!==0?A/B:'∞';default:return ''}}; const res=calc(a,b,op); return (<div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}> <header style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}> <div style={{width:12,height:12,borderRadius:999,background:'#20d6ff'}}></div> <h1 style={{margin:0,background:'linear-gradient(90deg,#20d6ff,#46ff9b)',WebkitBackgroundClip:'text',color:'transparent'}}>Digital Ninja Calculator</h1> </header> <div style={{display:'grid',gap:12,maxWidth:480,background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:12,padding:16}}> <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} /> <select value={op} onChange={e=>setOp(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}}> <option value="+">Add (+)</option><option value="-">Subtract (-)</option><option value="*">Multiply (*)</option><option value="/">Divide (/)</option> </select> <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} /> <div style={{padding:12,background:'#0f172a',border:'1px solid #334155',borderRadius:8}}> <strong style={{color:'#20d6ff'}}>Result:</strong> <span style={{marginLeft:8}}>{String(res)}</span> </div> </div> </div>);} """
+            if wants_calc else f"""export default function App(){{return <div style={{padding:24,fontFamily:'system-ui'}}><h1>Demo App</h1><p>Generated locally: {(project_data.prompt or '').replace('"','\\"')}</p></div>;}}"""
         )
         files = [
             {"path": "src/App.js", "content": app_js, "language": "js"},
@@ -416,7 +384,6 @@ async def generate_project(project_data: ProjectCreate, current_user: User = Dep
     return Project(**project_doc)
 
 # ==================== PROJECT CHAT (PLAN / BUILD) ====================
-
 @api_router.post("/projects/{project_id}/chat/plan", response_model=ChatResponse)
 async def project_chat_plan(project_id: str, req: ChatRequest, current_user: User = Depends(get_current_user)):
     project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
@@ -434,7 +401,6 @@ async def project_chat_plan(project_id: str, req: ChatRequest, current_user: Use
 def _apply_simple_build(message: str, app_js: str) -> str:
     """Very simple transform: add tabs/nav and common sections or theme changes."""
     m = message.lower()
-
     # Ensure app has basic tabs scaffolding
     if "tab" in m or "navbar" in m or "about" in m or "contact" in m or "faq" in m or "products" in m:
         if "useState('home')" not in app_js and "useState(\"home\")" not in app_js:
@@ -442,44 +408,20 @@ def _apply_simple_build(message: str, app_js: str) -> str:
             body = app_js
             # Try to capture inner JSX of return(...)
             # Fallback: append tab UI
-            tab_shell = """
-export default function App(){
-  const [tab,setTab]=React.useState('home');
-  const Link = ({id,children}) => <button onClick={()=>setTab(id)} style={{padding:8,marginRight:8,borderRadius:8,border:'1px solid #334155',background:tab===id?'#0f172a':'#111827',color:'#d7e7ff'}}>{children}</button>;
-  return (
-    <div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}>
-      <nav style={{marginBottom:16}}>
-        <Link id="home">Home</Link>
-        <Link id="about">About</Link>
-        <Link id="products">Products</Link>
-        <Link id="faq">FAQ</Link>
-        <Link id="contact">Contact</Link>
-      </nav>
-      {tab==='home' && (<div><h1>Home</h1><p>Welcome to Digital Ninja.</p></div>)}
-      {tab==='about' && (<div><h1>About</h1><p>About our project.</p></div>)}
-      {tab==='products' && (<div><h1>Products</h1><ul><li>Product A</li><li>Product B</li></ul></div>)}
-      {tab==='faq' && (<div><h1>FAQ</h1><p>Q: What is this? A: An AI-built demo.</p></div>)}
-      {tab==='contact' && (<div><h1>Contact</h1><p>Email: hello@example.com</p></div>)}
-    </div>
-  );
-}
-"""
+            tab_shell = """ export default function App(){ const [tab,setTab]=React.useState('home'); const Link = ({id,children}) => <button onClick={()=>setTab(id)} style={{padding:8,marginRight:8,borderRadius:8,border:'1px solid #334155',background:tab===id?'#0f172a':'#111827',color:'#d7e7ff'}}>{children}</button>; return ( <div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}> <nav style={{marginBottom:16}}> <Link id="home">Home</Link> <Link id="about">About</Link> <Link id="products">Products</Link> <Link id="faq">FAQ</Link> <Link id="contact">Contact</Link> </nav> {tab==='home' && (<div><h1>Home</h1><p>Welcome to Digital Ninja.</p></div>)} {tab==='about' && (<div><h1>About</h1><p>About our project.</p></div>)} {tab==='products' && (<div><h1>Products</h1><ul><li>Product A</li><li>Product B</li></ul></div>)} {tab==='faq' && (<div><h1>FAQ</h1><p>Q: What is this? A: An AI-built demo.</p></div>)} {tab==='contact' && (<div><h1>Contact</h1><p>Email: hello@example.com</p></div>)} </div> ); } """
             app_js = tab_shell
-
-        # Targeted content updates
-        if "about" in m and "About" in app_js:
-            app_js = re.sub(r"\{tab==='about'[^}]+\}", "{tab==='about' && (<div><h1>About</h1><p>About our project. Updated per your request.</p></div>)}", app_js)
-        if "contact" in m and "Contact" in app_js:
-            app_js = re.sub(r"\{tab==='contact'[^}]+\}", "{tab==='contact' && (<div><h1>Contact</h1><p>Email: contact@digital.ninja</p><p>Twitter: @digitalninja</p></div>)}", app_js)
-        if "faq" in m and "FAQ" in app_js:
-            app_js = re.sub(r"\{tab==='faq'[^}]+\}", "{tab==='faq' && (<div><h1>FAQ</h1><ul><li>How does this work? It's AI-built.</li><li>Can I export? Yes.</li></ul></div>)}", app_js)
-
+    # Targeted content updates
+    if "about" in m and "About" in app_js:
+        app_js = re.sub(r"\{tab==='about'[^}]+\}", "{tab==='about' && (<div><h1>About</h1><p>About our project. Updated per your request.</p></div>)}", app_js)
+    if "contact" in m and "Contact" in app_js:
+        app_js = re.sub(r"\{tab==='contact'[^}]+\}", "{tab==='contact' && (<div><h1>Contact</h1><p>Email: contact@digital.ninja</p><p>Twitter: @digitalninja</p></div>)}", app_js)
+    if "faq" in m and "FAQ" in app_js:
+        app_js = re.sub(r"\{tab==='faq'[^}]+\}", "{tab==='faq' && (<div><h1>FAQ</h1><ul><li>How does this work? It's AI-built.</li><li>Can I export? Yes.</li></ul></div>)}", app_js)
     # Simple theme color tweak
     theme_match = re.search(r"(color|theme).*(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}))", m)
     if theme_match:
         hex_color = theme_match.group(2)
         app_js = app_js.replace("#20d6ff", hex_color).replace("#46ff9b", hex_color)
-
     return app_js
 
 @api_router.post("/projects/{project_id}/chat/build", response_model=ChatBuildResponse)
@@ -487,25 +429,20 @@ async def project_chat_build(project_id: str, req: ChatRequest, current_user: Us
     project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-
     files = project.get("files", [])
     app_file = None
     for f in files:
         if f.get("path", "").endswith("App.js") or f.get("path", "").endswith("App.jsx") or "App.js" in f.get("path",""):
             app_file = f
             break
-
     if not app_file:
         # create a minimal App.js if missing
         app_file = {"path": "src/App.js", "content": "export default function App(){return <div style={{padding:24}}>Hello</div>;}", "language": "js"}
         files.append(app_file)
-
     new_content = _apply_simple_build(req.message, app_file.get("content",""))
-
     if new_content == app_file.get("content",""):
         reply = "I evaluated your request, but no changes were necessary. Try asking to add tabs (Home, About, Contact, FAQ) or to change the theme color (e.g., set theme color to #ff4500)."
         return ChatBuildResponse(response=reply, file_updates=[])
-
     update = FileUpdate(path=app_file["path"], content=new_content)
     # Apply update in DB
     for i, f in enumerate(files):
@@ -514,18 +451,14 @@ async def project_chat_build(project_id: str, req: ChatRequest, current_user: Us
             break
     else:
         files.append({"path": update.path, "content": update.content, "language": "js"})
-
     await db.projects.update_one(
         {"project_id": project_id, "user_id": current_user.user_id},
         {"$set": {"files": files, "updated_at": datetime.now(timezone.utc).isoformat()}}
     )
-
     reply = "Applied your change. Preview should update. Ask me to add About/Contact/FAQ tabs or adjust theme colors for more."
     return ChatBuildResponse(response=reply, file_updates=[update])
 
-
 # ==================== EXPORT ENDPOINTS ====================
-
 @api_router.post("/projects/{project_id}/export")
 async def export_project(project_id: str, current_user: User = Depends(get_current_user)):
     project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
@@ -552,7 +485,6 @@ async def export_project_github(project_id: str, current_user: User = Depends(ge
     }
 
 # ==================== GITHUB PUSH ====================
-
 class GitHubPushRequest(BaseModel):
     token: str
     owner: str
@@ -596,10 +528,8 @@ async def _gh_put_file(client: httpx.AsyncClient, owner: str, repo: str, path: s
 async def push_github(req: GitHubPushRequest, current_user: User = Depends(get_current_user)):
     if not req.token or not req.owner or not req.repo:
         raise HTTPException(status_code=400, detail="Missing token/owner/repo")
-
     project_root = Path(__file__).resolve().parents[1]
     include = req.include_paths or ["frontend", "backend", "package.json", "pnpm-workspace.yaml", "docker-compose.yml", "README.md", "README_FINAL.md", "render.yaml", "vercel.json", ".gitignore"]
-
     files_to_push: List[Path] = []
     for p in include:
         target = (project_root / p).resolve()
@@ -610,16 +540,13 @@ async def push_github(req: GitHubPushRequest, current_user: User = Depends(get_c
             for path in target.rglob("*"):
                 if path.is_file() and not _skip_path(path):
                     files_to_push.append(path)
-
     if not files_to_push:
         raise HTTPException(status_code=400, detail="No files found to push")
-
     headers = {
         "Authorization": f"token {req.token}",
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "digital-ninja-app-builder"
     }
-
     pushed = 0
     async with httpx.AsyncClient(timeout=60.0) as client:
         for fpath in files_to_push:
@@ -635,9 +562,7 @@ async def push_github(req: GitHubPushRequest, current_user: User = Depends(get_c
                     logging.error(f"Failed to push {rel}")
             except Exception as e:
                 logging.error(f"Error pushing {rel}: {e}")
-
     return {"message": "Push completed", "files_pushed": pushed, "repo": f"{req.owner}/{req.repo}", "branch": req.branch or "default"}
-
 
 # ==================== HEALTH CHECK & SETUP ====================
 @app.get("/api/health")
@@ -652,7 +577,6 @@ app.include_router(api_router)
 
 import logging
 logging.info("Setting up CORS for http://localhost:3000")
-
 
 if __name__ == "__main__":
     import uvicorn
