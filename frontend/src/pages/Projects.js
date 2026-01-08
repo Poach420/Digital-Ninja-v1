@@ -9,6 +9,7 @@ import { Plus, Code2, Calendar, Sparkles, LogOut } from 'lucide-react';
 import { isDevAuthEnabled } from '../utils/devAuth';
 import GitHubPushDialog from '../components/GitHubPushDialog';
 import BrandLogo from '../components/BrandLogo';
+import SystemStatus from '../components/SystemStatus';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -101,6 +102,8 @@ const Projects = () => {
             </Button>
           </div>
         </div>
+
+        <SystemStatus />
 
         {/* Projects Grid */}
         {loading ? (
