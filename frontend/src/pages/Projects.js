@@ -6,6 +6,7 @@ import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
 import api from '../utils/api';
 import { Plus, Code2, Calendar, Sparkles, LogOut } from 'lucide-react';
+import { isDevAuthEnabled } from '../utils/devAuth';
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -25,7 +26,26 @@ const Projects = () => {
       setProjects(response.data);
     } catch (error) {
       console.error('Failed to load projects:', error);
-      toast.error('Failed to load projects');
+      if (isDevAuthEnabled()) {
+        // Provide a demo project so you can enter the editor/builder
+        setProjects([{
+          project_id: 'demo_project',
+          user_id: 'dev_user',
+          name: 'Demo App',
+          description: 'Sample project for preview',
+          prompt: 'Demo app preview',
+          tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
+          files: [
+            { path: 'src/App.js', content: 'export default function App(){return <div style={{padding:20}}><h1>Demo App</h1><p>Hello from Digital Ninja.</p></div>}', language: 'js' },
+            { path: 'src/index.css', content: 'body{font-family:sans-serif}', language: 'css' },
+          ],
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }]);
+      } else {
+        toast.error('Failed to load projects');
+      }
     } finally {
       setLoading(false);
     }

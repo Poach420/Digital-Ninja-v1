@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
+import { isDevAuthEnabled } from '../utils/devAuth';
 
 const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -12,6 +13,15 @@ const ProtectedRoute = ({ children }) => {
     
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
+      
+      // Dev auth: trust local token in localhost preview
+      if (isDevAuthEnabled() && token) {
+        if (mounted) {
+          setIsAuthenticated(true);
+          setChecking(false);
+        }
+        return;
+      }
       
       if (!token) {
         if (mounted) {

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import api, { API } from '../utils/api';
 import { Mail, Lock, User, Zap } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
+import { isDevAuthEnabled, devSignIn } from '../utils/devAuth';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -27,25 +28,35 @@ const Register = () => {
       toast.success('Account created successfully!');
       navigate('/projects');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      const msg = error.response?.data?.detail || error.message || 'Registration failed';
+      if (isDevAuthEnabled()) {
+        const { user } = devSignIn({ email, name });
+        toast.success(`Dev account created: ${user.name}`);
+        navigate('/projects');
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
-    // Fetch Google OAuth URL from backend (GET)
     try {
       const response = await api.get('/auth/google');
       if (response.data.auth_url) {
         window.location.href = response.data.auth_url;
       } else {
-        alert("Google OAuth not configured. Backend response: " + JSON.stringify(response.data));
-        console.error("Google OAuth error: ", response.data);
+        toast.error(response.data.message || 'Google OAuth not configured.');
       }
     } catch (err) {
-      alert("Failed to initiate Google OAuth. " + (err.response ? JSON.stringify(err.response.data) : err.message));
-      console.error("Google OAuth exception: ", err);
+      if (isDevAuthEnabled()) {
+        const { user } = devSignIn({ email: 'dev-google@example.com', name: 'Dev Google' });
+        toast.success(`Dev Google sign-up: ${user.name}`);
+        navigate('/projects');
+      } else {
+        toast.error('Failed to initiate Google OAuth. Network Error');
+      }
     }
   };
 
@@ -155,7 +166,7 @@ const Register = () => {
 
       <div className="relative hidden w-0 flex-1 lg:block">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-slate-800">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZoLTJ6bTAtNGgydjJoLTJ2LTJ6bTAgNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZoLTJ6bTAtNGgydjJoLTJ2LTJ6bTAgNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6bTAtNGgydjJoLTJ2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
           <div className="absolute inset-0 flex items-center justify-center p-12">
             <div className="max-w-md text-white">
               <h2 className="text-4xl font-heading font-bold mb-4">Join Our Community</h2>

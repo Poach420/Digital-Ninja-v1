@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import api, { API } from '../utils/api';
 import { Mail, Lock, Zap } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
+import { isDevAuthEnabled, devSignIn } from '../utils/devAuth';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -37,25 +38,35 @@ const Login = () => {
       toast.success('Welcome back!');
       navigate('/projects');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      const msg = error.response?.data?.detail || error.message || 'Login failed';
+      if (isDevAuthEnabled()) {
+        const { user } = devSignIn({ email, name: email.split('@')[0] });
+        toast.success(`Dev sign-in: ${user.name}`);
+        navigate('/projects');
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    // Fetch Google OAuth URL from backend (GET)
     try {
       const response = await api.get('/auth/google');
       if (response.data.auth_url) {
         window.location.href = response.data.auth_url;
       } else {
-        alert("Google OAuth not configured. Backend response: " + JSON.stringify(response.data));
-        console.error("Google OAuth error: ", response.data);
+        toast.error(response.data.message || 'Google OAuth not configured.');
       }
     } catch (err) {
-      alert("Failed to initiate Google OAuth. " + (err.response ? JSON.stringify(err.response.data) : err.message));
-      console.error("Google OAuth exception: ", err);
+      if (isDevAuthEnabled()) {
+        const { user } = devSignIn({ email: 'dev-google@example.com', name: 'Dev Google' });
+        toast.success(`Dev Google sign-in: ${user.name}`);
+        navigate('/projects');
+      } else {
+        toast.error('Failed to initiate Google OAuth. Network Error');
+      }
     }
   };
 
