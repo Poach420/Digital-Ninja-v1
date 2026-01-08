@@ -46,8 +46,51 @@ const Builder = () => {
     } catch (error) {
       console.error('Generation error:', error);
       if (isDevAuthEnabled()) {
-        // Dev fallback: create local demo project and open editor
         const localId = `dev_${Date.now().toString(36)}`;
+        const wantsCalculator = /calculator/i.test(prompt.trim());
+        const calculatorApp = `
+export default function App(){
+  const [a, setA] = React.useState('');
+  const [b, setB] = React.useState('');
+  const [op, setOp] = React.useState('+');
+  const calc = (x, y, o) => {
+    const A = parseFloat(x); const B = parseFloat(y);
+    if (isNaN(A) || isNaN(B)) return '';
+    switch(o){ case '+': return A+B; case '-': return A-B; case '*': return A*B; case '/': return B!==0?A/B:'∞'; default: return ''; }
+  };
+  const result = calc(a, b, op);
+  return (
+    <div style={{padding:24, fontFamily:'system-ui'}}>
+      <h1 style={{marginBottom:12}}>Calculator</h1>
+      <div style={{display:'grid', gap:12, maxWidth:420}}>
+        <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} />
+        <select value={op} onChange={e=>setOp(e.target.value)}>
+          <option value="+">Add (+)</option>
+          <option value="-">Subtract (-)</option>
+          <option value="*">Multiply (*)</option>
+          <option value="/">Divide (/)</option>
+        </select>
+        <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} />
+        <div style={{padding:12, background:'#f5f5f7', borderRadius:8}}>
+          <strong>Result:</strong> <span>{String(result)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+        `.trim();
+
+        const defaultApp = `
+export default function App(){
+  return (
+    <div style={{padding:24, fontFamily:'system-ui'}}>
+      <h1>Demo App</h1>
+      <p>Generated locally: ${prompt.trim().replace(/"/g, '\\"')}</p>
+    </div>
+  );
+}
+        `.trim();
+
         const demoProject = {
           project_id: localId,
           user_id: 'dev_user',
@@ -56,8 +99,8 @@ const Builder = () => {
           prompt: prompt.trim(),
           tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
           files: [
-            { path: 'src/App.js', content: 'export default function App(){return <div style={{padding:20}}><h1>Demo App</h1><p>Generated locally: ' + prompt.trim().replace(/"/g, '\\"') + '</p></div>}', language: 'js' },
-            { path: 'src/index.css', content: 'body{font-family:sans-serif}', language: 'css' },
+            { path: 'src/App.js', content: wantsCalculator ? calculatorApp : defaultApp, language: 'js' },
+            { path: 'src/index.css', content: 'body{font-family:sans-serif;margin:0;background:#fff}', language: 'css' },
           ],
           status: 'active',
           created_at: new Date().toISOString(),
@@ -66,7 +109,7 @@ const Builder = () => {
         const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
         cache[localId] = demoProject;
         localStorage.setItem('dev_projects', JSON.stringify(cache));
-        toast.success('Local demo project created');
+        toast.success(wantsCalculator ? 'Local calculator created' : 'Local demo project created');
         setShowLogger(false);
         setGenerating(false);
         navigate(`/editor/${localId}`);

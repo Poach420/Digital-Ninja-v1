@@ -78,6 +78,9 @@ const Projects = () => {
             <p className="text-slate-400">Welcome back, {user.name}</p>
           </div>
           <div className="flex gap-3">
+            <Button onClick={() => navigate('/ai-builder')} variant="outline" className="text-white border-slate-600" data-testid="open-ai-builder">
+              Open AI Builder
+            </Button>
             <Button onClick={() => navigate('/builder')} className="bg-[#ff4500] hover:bg-[#ff5722]" data-testid="new-project-button">
               <Plus className="mr-2 h-4 w-4" />
               New Project

@@ -5,8 +5,9 @@ import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import api from '../utils/api';
 import LivePreview from '../components/LivePreview';
-import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff, Github } from 'lucide-react';
+import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff, Github, MessageSquare, Hammer } from 'lucide-react';
 import { isDevAuthEnabled } from '../utils/devAuth';
+import AIChat from '../components/AIChat';
 
 const ProjectEditor = () => {
   const { projectId } = useParams();
@@ -18,6 +19,7 @@ const ProjectEditor = () => {
   const [deploying, setDeploying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -212,6 +214,15 @@ const ProjectEditor = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowChat(!showChat)} className="text-white border-slate-600" data-testid="toggle-chat">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            {showChat ? 'Close Chat' : 'AI Assistant'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/ai-builder?projectId=${projectId}`)} className="text-white border-slate-600" data-testid="continue-build">
+            <Hammer className="h-4 w-4 mr-2" />
+            Continue Build
+          </Button>
+          <div className="h-6 w-px bg-slate-700" />
           <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)} className="text-white border-slate-600" data-testid="toggle-preview">
             {showPreview ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
             {showPreview ? 'Hide' : 'Show'} Preview
@@ -263,8 +274,9 @@ const ProjectEditor = () => {
             )}
           </div>
           {showPreview && (
-            <div className="w-1/2">
+            <div className="w-1/2 relative">
               <LivePreview files={project.files} />
+              {showChat && <AIChat onClose={() => setShowChat(false)} />}
             </div>
           )}
         </div>

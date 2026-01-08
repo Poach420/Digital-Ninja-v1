@@ -17,6 +17,13 @@ const AiBuilder = () => {
   const [loadingProject, setLoadingProject] = useState(false);
 
   useEffect(() => {
+    // Preselect project from query string (e.g., /ai-builder?projectId=xyz)
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get('projectId');
+    if (pid) setProjectId(pid);
+  }, []);
+
+  useEffect(() => {
     if (projectId) {
       loadProject(projectId);
     } else {
