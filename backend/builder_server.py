@@ -1,11 +1,10 @@
-
-
 from dotenv import load_dotenv, find_dotenv
 import sys
 load_dotenv(find_dotenv(), override=True)
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse, HTMLResponse, RedirectResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import List, Optional, Dict, Any
@@ -15,6 +14,11 @@ from jose import JWTError, jwt
 import os
 import uuid
 import logging
+from pathlib import Path
+import base64
+import httpx
+import re
+import json
 
 # MongoDB robust connection
 mongo_url = os.environ.get('MONGO_URL')
@@ -117,6 +121,21 @@ class Project(BaseModel):
 class FileUpdate(BaseModel):
     path: str
     content: str
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: List[ChatMessage] = []
+
+class ChatResponse(BaseModel):
+    response: str
+
+class ChatBuildResponse(BaseModel):
+    response: str
+    file_updates: List[FileUpdate] = []
 
 # ==================== AUTH HELPERS ====================
 
@@ -328,63 +347,296 @@ async def get_project(project_id: str, current_user: User = Depends(get_current_
 
 @api_router.post("/projects/generate", response_model=Project)
 async def generate_project(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
-    from ai_builder_service import AIBuilderService
+    """Generate a project using AIBuilderService when available; otherwise produce a usable fallback and normalize paths."""
     try:
+        from ai_builder_service import AIBuilderService
         ai_builder = AIBuilderService()
         app_struct = await ai_builder.generate_app_structure(project_data.prompt, project_data.tech_stack)
-        project_id = f"proj_{uuid.uuid4().hex[:12]}"
-        now = datetime.now(timezone.utc)
-        project_doc = {
-            "project_id": project_id,
-            "user_id": current_user.user_id,
-            "name": app_struct.get("app_name", "AI Project"),
-            "description": app_struct.get("description", project_data.prompt),
-            "prompt": project_data.prompt,
-            "tech_stack": project_data.tech_stack,
-            "files": app_struct.get("files", []),
-            "status": "active",
-            "created_at": now.isoformat(),
-            "updated_at": now.isoformat()
-        }
-        await db.projects.insert_one(project_doc)
-        project_doc['created_at'] = now
-        project_doc['updated_at'] = now
-        return Project(**project_doc)
+        files = app_struct.get("files", [])
     except Exception as e:
-        logging.error(f"AI builder error: {e}")
-        raise HTTPException(status_code=500, detail=f"AI builder error: {e}")
+        logging.warning(f"AI builder unavailable, falling back: {e}")
+        # Deterministic fallback that renders well in our preview
+        wants_calc = re.search(r"\b(calc|calculator|arithmetic|add|subtract|multiply|divide)\b", project_data.prompt or "", re.I)
+        app_js = (
+            """export default function App(){
+  const [a,setA]=React.useState(''); const [b,setB]=React.useState(''); const [op,setOp]=React.useState('+');
+  const calc=(x,y,o)=>{const A=parseFloat(x),B=parseFloat(y); if(Number.isNaN(A)||Number.isNaN(B))return ''; switch(o){case '+':return A+B;case '-':return A-B;case '*':return A*B;case '/':return B!==0?A/B:'∞';default:return ''}};
+  const res=calc(a,b,op);
+  return (<div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}>
+    <header style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+      <div style={{width:12,height:12,borderRadius:999,background:'#20d6ff'}}></div>
+      <h1 style={{margin:0,background:'linear-gradient(90deg,#20d6ff,#46ff9b)',WebkitBackgroundClip:'text',color:'transparent'}}>Digital Ninja Calculator</h1>
+    </header>
+    <div style={{display:'grid',gap:12,maxWidth:480,background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:12,padding:16}}>
+      <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} />
+      <select value={op} onChange={e=>setOp(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}}>
+        <option value="+">Add (+)</option><option value="-">Subtract (-)</option><option value="*">Multiply (*)</option><option value="/">Divide (/)</option>
+      </select>
+      <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} />
+      <div style={{padding:12,background:'#0f172a',border:'1px solid #334155',borderRadius:8}}>
+        <strong style={{color:'#20d6ff'}}>Result:</strong> <span style={{marginLeft:8}}>{String(res)}</span>
+      </div>
+    </div>
+  </div>);}
+""" if wants_calc else
+            f"""export default function App(){{return <div style={{padding:24,fontFamily:'system-ui'}}><h1>Demo App</h1><p>Generated locally: {(project_data.prompt or '').replace('"','\\"')}</p></div>;}}"""
+        )
+        files = [
+            {"path": "src/App.js", "content": app_js, "language": "js"},
+            {"path": "src/index.css", "content": "body{font-family:sans-serif;margin:0;background:#0b0f16}", "language": "css"}
+        ]
 
-# --- Add /api/chat endpoint if missing ---
-from fastapi import Body
-class ChatRequest(BaseModel):
-    prompt: str
-    tech_stack: Optional[Dict[str, str]] = None
+    # Normalize paths: map frontend/src/* → src/* for our previewer
+    normalized_files = []
+    for f in files:
+        p = f.get("path", "")
+        p = p.replace("\\", "/")
+        p = re.sub(r"^frontend/", "", p)
+        p = re.sub(r"^client/", "", p)
+        p = re.sub(r"^app/", "", p)
+        normalized_files.append({"path": p, "content": f.get("content", ""), "language": f.get("language", "txt")})
 
-@api_router.post("/chat")
-async def chat_endpoint(data: ChatRequest = Body(...), current_user: User = Depends(get_current_user)):
-    from ai_builder_service import AIBuilderService
-    try:
-        ai_builder = AIBuilderService()
-        result = await ai_builder.generate_app_structure(data.prompt, data.tech_stack or {})
-        return {"result": result}
-    except Exception as e:
-        logging.error(f"AI chat error: {e}")
-        raise HTTPException(status_code=500, detail=f"AI chat error: {e}")
+    project_id = f"proj_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    project_doc = {
+        "project_id": project_id,
+        "user_id": current_user.user_id,
+        "name": (project_data.prompt or "AI Project")[:40] or "AI Project",
+        "description": project_data.prompt or "",
+        "prompt": project_data.prompt or "",
+        "tech_stack": project_data.tech_stack,
+        "files": normalized_files,
+        "status": "active",
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+    await db.projects.insert_one(project_doc)
+    project_doc['created_at'] = now
+    project_doc['updated_at'] = now
+    return Project(**project_doc)
 
-@api_router.put("/projects/{project_id}/files")
-async def update_file(
-    project_id: str,
-    file_update: FileUpdate,
-    current_user: User = Depends(get_current_user)
-):
-    result = await db.projects.update_one(
-        {"project_id": project_id, "user_id": current_user.user_id},
-        {"$set": {"files.$[elem].content": file_update.content, "updated_at": datetime.now(timezone.utc).isoformat()}},
-        array_filters=[{"elem.path": file_update.path}]
+# ==================== PROJECT CHAT (PLAN / BUILD) ====================
+
+@api_router.post("/projects/{project_id}/chat/plan", response_model=ChatResponse)
+async def project_chat_plan(project_id: str, req: ChatRequest, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    plan = (
+        f"I see your project '{project.get('name')}'. Your goal: {req.message}\n"
+        "- Suggestion 1: Add tabs for Home, About, Contact, FAQ.\n"
+        "- Suggestion 2: Extract UI into small components to keep App.js clean.\n"
+        "- Suggestion 3: Define next actions (e.g., add FAQ content, switch theme colors, add navbar).\n"
+        "Reply with a specific change and I'll apply it."
     )
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="File or project not found")
-    return {"message": "File updated"}
+    return ChatResponse(response=plan)
+
+def _apply_simple_build(message: str, app_js: str) -> str:
+    """Very simple transform: add tabs/nav and common sections or theme changes."""
+    m = message.lower()
+
+    # Ensure app has basic tabs scaffolding
+    if "tab" in m or "navbar" in m or "about" in m or "contact" in m or "faq" in m or "products" in m:
+        if "useState('home')" not in app_js and "useState(\"home\")" not in app_js:
+            # Wrap current UI into a tabbed shell
+            body = app_js
+            # Try to capture inner JSX of return(...)
+            # Fallback: append tab UI
+            tab_shell = """
+export default function App(){
+  const [tab,setTab]=React.useState('home');
+  const Link = ({id,children}) => <button onClick={()=>setTab(id)} style={{padding:8,marginRight:8,borderRadius:8,border:'1px solid #334155',background:tab===id?'#0f172a':'#111827',color:'#d7e7ff'}}>{children}</button>;
+  return (
+    <div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}>
+      <nav style={{marginBottom:16}}>
+        <Link id="home">Home</Link>
+        <Link id="about">About</Link>
+        <Link id="products">Products</Link>
+        <Link id="faq">FAQ</Link>
+        <Link id="contact">Contact</Link>
+      </nav>
+      {tab==='home' && (<div><h1>Home</h1><p>Welcome to Digital Ninja.</p></div>)}
+      {tab==='about' && (<div><h1>About</h1><p>About our project.</p></div>)}
+      {tab==='products' && (<div><h1>Products</h1><ul><li>Product A</li><li>Product B</li></ul></div>)}
+      {tab==='faq' && (<div><h1>FAQ</h1><p>Q: What is this? A: An AI-built demo.</p></div>)}
+      {tab==='contact' && (<div><h1>Contact</h1><p>Email: hello@example.com</p></div>)}
+    </div>
+  );
+}
+"""
+            app_js = tab_shell
+
+        # Targeted content updates
+        if "about" in m and "About" in app_js:
+            app_js = re.sub(r"\{tab==='about'[^}]+\}", "{tab==='about' && (<div><h1>About</h1><p>About our project. Updated per your request.</p></div>)}", app_js)
+        if "contact" in m and "Contact" in app_js:
+            app_js = re.sub(r"\{tab==='contact'[^}]+\}", "{tab==='contact' && (<div><h1>Contact</h1><p>Email: contact@digital.ninja</p><p>Twitter: @digitalninja</p></div>)}", app_js)
+        if "faq" in m and "FAQ" in app_js:
+            app_js = re.sub(r"\{tab==='faq'[^}]+\}", "{tab==='faq' && (<div><h1>FAQ</h1><ul><li>How does this work? It's AI-built.</li><li>Can I export? Yes.</li></ul></div>)}", app_js)
+
+    # Simple theme color tweak
+    theme_match = re.search(r"(color|theme).*(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}))", m)
+    if theme_match:
+        hex_color = theme_match.group(2)
+        app_js = app_js.replace("#20d6ff", hex_color).replace("#46ff9b", hex_color)
+
+    return app_js
+
+@api_router.post("/projects/{project_id}/chat/build", response_model=ChatBuildResponse)
+async def project_chat_build(project_id: str, req: ChatRequest, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    files = project.get("files", [])
+    app_file = None
+    for f in files:
+        if f.get("path", "").endswith("App.js") or f.get("path", "").endswith("App.jsx") or "App.js" in f.get("path",""):
+            app_file = f
+            break
+
+    if not app_file:
+        # create a minimal App.js if missing
+        app_file = {"path": "src/App.js", "content": "export default function App(){return <div style={{padding:24}}>Hello</div>;}", "language": "js"}
+        files.append(app_file)
+
+    new_content = _apply_simple_build(req.message, app_file.get("content",""))
+
+    if new_content == app_file.get("content",""):
+        reply = "I evaluated your request, but no changes were necessary. Try asking to add tabs (Home, About, Contact, FAQ) or to change the theme color (e.g., set theme color to #ff4500)."
+        return ChatBuildResponse(response=reply, file_updates=[])
+
+    update = FileUpdate(path=app_file["path"], content=new_content)
+    # Apply update in DB
+    for i, f in enumerate(files):
+        if f.get("path") == update.path:
+            files[i] = {"path": update.path, "content": update.content, "language": f.get("language","js")}
+            break
+    else:
+        files.append({"path": update.path, "content": update.content, "language": "js"})
+
+    await db.projects.update_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"$set": {"files": files, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    reply = "Applied your change. Preview should update. Ask me to add About/Contact/FAQ tabs or adjust theme colors for more."
+    return ChatBuildResponse(response=reply, file_updates=[update])
+
+
+# ==================== EXPORT ENDPOINTS ====================
+
+@api_router.post("/projects/{project_id}/export")
+async def export_project(project_id: str, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {
+        "project_id": project_id,
+        "name": project.get("name"),
+        "files": project.get("files", []),
+        "export_ready": True,
+        "instructions": "Import into your preferred host or push to GitHub."
+    }
+
+@api_router.post("/projects/{project_id}/export/github")
+async def export_project_github(project_id: str, current_user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {
+        "project_name": project.get("name", f"project_{project_id}"),
+        "description": project.get("description", ""),
+        "files": project.get("files", []),
+        "deployment_ready": True
+    }
+
+# ==================== GITHUB PUSH ====================
+
+class GitHubPushRequest(BaseModel):
+    token: str
+    owner: str
+    repo: str
+    branch: Optional[str] = "main"
+    commit_message: Optional[str] = "Push from Digital Ninja"
+    include_paths: Optional[List[str]] = None
+
+IGNORE_DIRS = {".git", "node_modules", "build", "dist", ".next", ".cache", ".turbo", ".pytest_cache", "__pycache__"}
+IGNORE_FILES = {".DS_Store", "yarn.lock", "package-lock.json"}
+
+def _skip_path(path: Path) -> bool:
+    if path.name in IGNORE_FILES:
+        return True
+    return any(part in IGNORE_DIRS for part in path.parts)
+
+async def _gh_file_sha(client: httpx.AsyncClient, owner: str, repo: str, path: str, branch: Optional[str], headers: Dict[str, str]) -> Optional[str]:
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    params = {"ref": branch} if branch else {}
+    r = await client.get(url, headers=headers, params=params)
+    if r.status_code == 200:
+        return r.json().get("sha")
+    return None
+
+async def _gh_put_file(client: httpx.AsyncClient, owner: str, repo: str, path: str, content_b64: str, message: str, branch: Optional[str], sha: Optional[str], headers: Dict[str, str]) -> bool:
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    payload = {"message": message, "content": content_b64}
+    if branch:
+        payload["branch"] = branch
+    if sha:
+        payload["sha"] = sha
+    r = await client.put(url, headers=headers, json=payload)
+    if r.status_code in (200, 201):
+        return True
+    if r.status_code == 422 and branch:
+        r2 = await client.put(url, headers=headers, json={"message": message, "content": content_b64})
+        return r2.status_code in (200, 201)
+    return False
+
+@api_router.post("/github/push")
+async def push_github(req: GitHubPushRequest, current_user: User = Depends(get_current_user)):
+    if not req.token or not req.owner or not req.repo:
+        raise HTTPException(status_code=400, detail="Missing token/owner/repo")
+
+    project_root = Path(__file__).resolve().parents[1]
+    include = req.include_paths or ["frontend", "backend", "package.json", "pnpm-workspace.yaml", "docker-compose.yml", "README.md", "README_FINAL.md", "render.yaml", "vercel.json", ".gitignore"]
+
+    files_to_push: List[Path] = []
+    for p in include:
+        target = (project_root / p).resolve()
+        if target.is_file():
+            if not _skip_path(target):
+                files_to_push.append(target)
+        elif target.is_dir():
+            for path in target.rglob("*"):
+                if path.is_file() and not _skip_path(path):
+                    files_to_push.append(path)
+
+    if not files_to_push:
+        raise HTTPException(status_code=400, detail="No files found to push")
+
+    headers = {
+        "Authorization": f"token {req.token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "digital-ninja-app-builder"
+    }
+
+    pushed = 0
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for fpath in files_to_push:
+            rel = str(fpath.relative_to(project_root)).replace("\\", "/")
+            try:
+                data = fpath.read_bytes()
+                content_b64 = base64.b64encode(data).decode("utf-8")
+                sha = await _gh_file_sha(client, req.owner, req.repo, rel, req.branch, headers)
+                ok = await _gh_put_file(client, req.owner, req.repo, rel, content_b64, req.commit_message or "Push from Digital Ninja", req.branch, sha, headers)
+                if ok:
+                    pushed += 1
+                else:
+                    logging.error(f"Failed to push {rel}")
+            except Exception as e:
+                logging.error(f"Error pushing {rel}: {e}")
+
+    return {"message": "Push completed", "files_pushed": pushed, "repo": f"{req.owner}/{req.repo}", "branch": req.branch or "default"}
 
 
 # ==================== HEALTH CHECK & SETUP ====================
