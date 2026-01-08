@@ -77,11 +77,8 @@ const Login = () => {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-6">
-            <BrandLogo className="h-14 w-14 rounded-lg shadow-lg" />
-            <h1 className="mt-3 text-3xl font-heading font-bold bg-gradient-to-r from-[#9b00e8] via-[#ff4500] to-[#9b00e8] bg-clip-text text-transparent">
-              Digital Ninja
-            </h1>
-            <p className="mt-1 text-sm text-slate-300">Build incredible apps with stealth and precision</p>
+            <BrandLogo className="h-16 w-16 rounded-lg shadow-lg" />
+            <p className="mt-3 text-sm text-slate-300">Build incredible apps with stealth and precision</p>
           </div>
 
           <Card className="border border-white/10 bg-white/5 backdrop-blur-md shadow-xl">
