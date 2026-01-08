@@ -47,32 +47,38 @@ const Builder = () => {
       console.error('Generation error:', error);
       if (isDevAuthEnabled()) {
         const localId = `dev_${Date.now().toString(36)}`;
-        const wantsCalculator = /calculator/i.test(prompt.trim());
+        const wantsCalculator = /\b(calc|calculator|arithmetic|add|subtract|multiply|divide)\b/i.test(prompt.trim());
         const calculatorApp = `
 export default function App(){
   const [a, setA] = React.useState('');
   const [b, setB] = React.useState('');
   const [op, setOp] = React.useState('+');
+
   const calc = (x, y, o) => {
-    const A = parseFloat(x); const B = parseFloat(y);
-    if (isNaN(A) || isNaN(B)) return '';
-    switch(o){ case '+': return A+B; case '-': return A-B; case '*': return A*B; case '/': return B!==0?A/B:'∞'; default: return ''; }
+    const A = parseFloat(x), B = parseFloat(y);
+    if (Number.isNaN(A) || Number.isNaN(B)) return '';
+    switch (o) { case '+': return A+B; case '-': return A-B; case '*': return A*B; case '/': return B!==0?A/B:'∞'; default: return ''; }
   };
+
   const result = calc(a, b, op);
+
   return (
-    <div style={{padding:24, fontFamily:'system-ui'}}>
-      <h1 style={{marginBottom:12}}>Calculator</h1>
-      <div style={{display:'grid', gap:12, maxWidth:420}}>
-        <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} />
-        <select value={op} onChange={e=>setOp(e.target.value)}>
+    <div style={{minHeight:'100vh', background:'#0b0f16', color:'#d7e7ff', fontFamily:'system-ui', padding:24}}>
+      <header style={{display:'flex', alignItems:'center', gap:12, marginBottom:16}}>
+        <div style={{width:12, height:12, borderRadius:999, background:'#20d6ff'}}></div>
+        <h1 style={{margin:0, background:'linear-gradient(90deg,#20d6ff,#46ff9b)', WebkitBackgroundClip:'text', color:'transparent'}}>Digital Ninja Calculator</h1>
+      </header>
+      <div style={{display:'grid', gap:12, maxWidth:480, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:16}}>
+        <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} style={{padding:10, borderRadius:8, border:'1px solid #334155', background:'#0f172a', color:'#d7e7ff'}} />
+        <select value={op} onChange={e=>setOp(e.target.value)} style={{padding:10, borderRadius:8, border:'1px solid #334155', background:'#0f172a', color:'#d7e7ff'}}>
           <option value="+">Add (+)</option>
           <option value="-">Subtract (-)</option>
           <option value="*">Multiply (*)</option>
           <option value="/">Divide (/)</option>
         </select>
-        <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} />
-        <div style={{padding:12, background:'#f5f5f7', borderRadius:8}}>
-          <strong>Result:</strong> <span>{String(result)}</span>
+        <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} style={{padding:10, borderRadius:8, border:'1px solid #334155', background:'#0f172a', color:'#d7e7ff'}} />
+        <div style={{padding:12, background:'#0f172a', border:'1px solid #334155', borderRadius:8}}>
+          <strong style={{color:'#20d6ff'}}>Result:</strong> <span style={{marginLeft:8}}>{String(result)}</span>
         </div>
       </div>
     </div>
@@ -83,8 +89,11 @@ export default function App(){
         const defaultApp = `
 export default function App(){
   return (
-    <div style={{padding:24, fontFamily:'system-ui'}}>
-      <h1>Demo App</h1>
+    <div style={{minHeight:'100vh', background:'#0b0f16', color:'#d7e7ff', fontFamily:'system-ui', padding:24}}>
+      <header style={{display:'flex', alignItems:'center', gap:12, marginBottom:16}}>
+        <div style={{width:12, height:12, borderRadius:999, background:'#20d6ff'}}></div>
+        <h1 style={{margin:0, background:'linear-gradient(90deg,#20d6ff,#46ff9b)', WebkitBackgroundClip:'text', color:'transparent'}}>Demo App</h1>
+      </header>
       <p>Generated locally: ${prompt.trim().replace(/"/g, '\\"')}</p>
     </div>
   );
@@ -100,7 +109,7 @@ export default function App(){
           tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
           files: [
             { path: 'src/App.js', content: wantsCalculator ? calculatorApp : defaultApp, language: 'js' },
-            { path: 'src/index.css', content: 'body{font-family:sans-serif;margin:0;background:#fff}', language: 'css' },
+            { path: 'src/index.css', content: 'body{font-family:sans-serif;margin:0;background:#0b0f16}', language: 'css' },
           ],
           status: 'active',
           created_at: new Date().toISOString(),

@@ -26,6 +26,39 @@ const ProjectEditor = () => {
   }, [projectId]);
 
   const loadProject = async () => {
+    // Offline dev: load local project without calling backend
+    if (isDevAuthEnabled() && (projectId.startsWith('dev_') || projectId === 'demo_project')) {
+      const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
+      const localProj = cache[projectId];
+      if (localProj) {
+        setProject(localProj);
+        if (localProj.files.length > 0) selectFile(localProj.files[0]);
+        setLoading(false);
+        return;
+      }
+      if (projectId === 'demo_project') {
+        const demo = {
+          project_id: 'demo_project',
+          user_id: 'dev_user',
+          name: 'Demo App',
+          description: 'Sample project for preview',
+          prompt: 'Demo app preview',
+          tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
+          files: [
+            { path: 'src/App.js', content: 'export default function App(){return <div style={{padding:20}}><h1>Demo App</h1><p>Hello from Digital Ninja.</p></div>}', language: 'js' },
+            { path: 'src/index.css', content: 'body{font-family:sans-serif;background:#0b0f16}', language: 'css' },
+          ],
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setProject(demo);
+        selectFile(demo.files[0]);
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const response = await api.get(`/projects/${projectId}`);
       setProject(response.data);
@@ -33,41 +66,8 @@ const ProjectEditor = () => {
         selectFile(response.data.files[0]);
       }
     } catch (error) {
-      if (isDevAuthEnabled()) {
-        // Dev fallback: load from local cache or synthesize demo
-        const cache = JSON.parse(localStorage.getItem('dev_projects') || '{}');
-        const localProj = cache[projectId];
-        if (localProj) {
-          setProject(localProj);
-          if (localProj.files.length > 0) selectFile(localProj.files[0]);
-          toast.success('Loaded local demo project');
-        } else if (projectId === 'demo_project') {
-          const demo = {
-            project_id: 'demo_project',
-            user_id: 'dev_user',
-            name: 'Demo App',
-            description: 'Sample project for preview',
-            prompt: 'Demo app preview',
-            tech_stack: { frontend: 'React', backend: 'FastAPI', database: 'MongoDB' },
-            files: [
-              { path: 'src/App.js', content: 'export default function App(){return <div style={{padding:20}}><h1>Demo App</h1><p>Hello from Digital Ninja.</p></div>}', language: 'js' },
-              { path: 'src/index.css', content: 'body{font-family:sans-serif}', language: 'css' },
-            ],
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          setProject(demo);
-          selectFile(demo.files[0]);
-          toast.success('Loaded built-in demo project');
-        } else {
-          toast.error('Failed to load project (dev mode)');
-          navigate('/projects');
-        }
-      } else {
-        toast.error('Failed to load project');
-        navigate('/projects');
-      }
+      toast.error('Failed to load project');
+      navigate('/projects');
     } finally {
       setLoading(false);
     }
