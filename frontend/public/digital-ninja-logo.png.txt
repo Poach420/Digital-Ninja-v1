@@ -1,0 +1,6 @@
+This is a placeholder file. Please replace this with your actual DIGITAL NINJA LOGO.png file.
+
+Instructions:
+1. Delete this file (digital-ninja-logo.png.txt)
+2. Add your actual logo as digital-ninja-logo.png in this directory
+3. The BrandLogo component will automatically use it
