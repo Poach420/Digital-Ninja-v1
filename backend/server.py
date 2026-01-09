@@ -335,12 +335,34 @@ async def get_project(project_id: str, current_user: User = Depends(get_current_
 
 @api_router.post("/projects/generate", response_model=Project)
 async def generate_project(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
-    """Generate a project using AIBuilderService when available; otherwise produce a usable fallback and normalize paths."""
+    """Generate a project using AIBuilderService V2 (ENHANCED with real APIs); fallback to V1 or basic if unavailable."""
     try:
-        from ai_builder_service import AIBuilderService
-        ai_builder = AIBuilderService()
+        # Try V2 first (with API integrations, backend generation, etc.)
+        from ai_builder_service_v2 import AIBuilderServiceV2
+        ai_builder = AIBuilderServiceV2()
         app_struct = await ai_builder.generate_app_structure(project_data.prompt, project_data.tech_stack)
         files = app_struct.get("files", [])
+        logging.info("✅ Using AI Builder V2 (Enhanced)")
+    except Exception as e1:
+        logging.warning(f"AI Builder V2 unavailable: {e1}, trying V1...")
+        try:
+            from ai_builder_service import AIBuilderService
+            ai_builder = AIBuilderService()
+            app_struct = await ai_builder.generate_app_structure(project_data.prompt, project_data.tech_stack)
+            files = app_struct.get("files", [])
+            logging.info("✅ Using AI Builder V1 (Basic)")
+        except Exception as e2:
+            logging.warning(f"All AI builders unavailable, using fallback: {e2}")
+            # Deterministic fallback
+            wants_calc = re.search(r"\b(calc|calculator|arithmetic|add|subtract|multiply|divide)\b", project_data.prompt or "", re.I)
+            app_js = (
+                """export default function App(){ const [a,setA]=React.useState(''); const [b,setB]=React.useState(''); const [op,setOp]=React.useState('+'); const calc=(x,y,o)=>{const A=parseFloat(x),B=parseFloat(y); if(Number.isNaN(A)||Number.isNaN(B))return ''; switch(o){case '+':return A+B;case '-':return A-B;case '*':return A*B;case '/':return B!==0?A/B:'∞';default:return ''}}; const res=calc(a,b,op); return (<div style={{minHeight:'100vh',background:'#0b0f16',color:'#d7e7ff',fontFamily:'system-ui',padding:24}}> <header style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}> <div style={{width:12,height:12,borderRadius:999,background:'#20d6ff'}}></div> <h1 style={{margin:0,background:'linear-gradient(90deg,#20d6ff,#46ff9b)',WebkitBackgroundClip:'text',color:'transparent'}}>Digital Ninja Calculator</h1> </header> <div style={{display:'grid',gap:12,maxWidth:480,background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:12,padding:16}}> <input placeholder="First number" value={a} onChange={e=>setA(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} /> <select value={op} onChange={e=>setOp(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}}> <option value="+">Add (+)</option><option value="-">Subtract (-)</option><option value="*">Multiply (*)</option><option value="/">Divide (/)</option> </select> <input placeholder="Second number" value={b} onChange={e=>setB(e.target.value)} style={{padding:10,borderRadius:8,border:'1px solid #334155',background:'#0f172a',color:'#d7e7ff'}} /> <div style={{padding:12,background:'#0f172a',border:'1px solid #334155',borderRadius:8}}> <strong style={{color:'#20d6ff'}}>Result:</strong> <span style={{marginLeft:8}}>{String(res)}</span> </div> </div> </div>);} """
+                if wants_calc else f"""export default function App(){{return <div style={{padding:24,fontFamily:'system-ui'}}><h1>Demo App</h1><p>Generated locally: {(project_data.prompt or '').replace('"','\\"')}</p></div>;}}"""
+            )
+            files = [
+                {"path": "src/App.js", "content": app_js, "language": "js"},
+                {"path": "src/index.css", "content": "body{font-family:sans-serif;margin:0;background:#0b0f16}", "language": "css"}
+            ]
     except Exception as e:
         logging.warning(f"AI builder unavailable, falling back: {e}")
         # Deterministic fallback that renders well in our preview
@@ -396,11 +418,15 @@ async def generate_project_stream(project_data: ProjectCreate, current_user: Use
             yield f"data: {json.dumps({'type': 'status', 'message': '📊 Analyzing requirements...'})}\n\n"
             await asyncio.sleep(0.1)
             
-            # Start actual AI generation
-            from ai_builder_service import AIBuilderService
-            ai_builder = AIBuilderService()
-            
-            yield f"data: {json.dumps({'type': 'status', 'message': '🤖 GPT-4o is thinking...'})}\n\n"
+            # Start actual AI generation - Try V2 first (enhanced), fallback to V1
+            try:
+                from ai_builder_service_v2 import AIBuilderServiceV2
+                ai_builder = AIBuilderServiceV2()
+                yield f"data: {json.dumps({'type': 'status', 'message': '🤖 GPT-4o with API integrations...'})}\n\n"
+            except:
+                from ai_builder_service import AIBuilderService
+                ai_builder = AIBuilderService()
+                yield f"data: {json.dumps({'type': 'status', 'message': '🤖 GPT-4o is thinking...'})}\n\n"
             
             app_struct = await ai_builder.generate_app_structure(project_data.prompt, project_data.tech_stack)
             files = app_struct.get("files", [])
