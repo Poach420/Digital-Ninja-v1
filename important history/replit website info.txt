@@ -1,0 +1,1366 @@
+Skip to content
+Your Starter Plan
+Agent credits
+0% used
+Cloud credits
+0% used
+Install Replit on
+Profile
+JH
+
+johanh1537
+No file chosen
+Drag or upload
+johanh1537
+* You can change your username through the CLI once
+First name
+Johan
+Last name
+Huisamen
+Bio (140 characters remaining)
+Add a bio
+Account
+Your email
+johanh1537@gmail.com
+Your password
+••••••••••••
+Your server location
+North America
+
+North America
+Receive transactional notifications via email
+
+Receive marketing notifications
+
+Export Apps
+Bulk export personal Apps
+Billing
+Your personal account plan
+See subscription plan options below
+Payment details
+Add a payment method to enable additional resource usage.
+Referrals
+Invite friends to join Replit and earn $10 in credits per complete referral.
+Learn more about the referral program
+https://replit.com/refer/johanh1537
+Roles
+Explorer
+
+Help test new features. If something isn’t working right, please let us know. You can remove this role to hang up your explorer’s hat until we get things fixed.
+Account Secrets
+Add secrets to your account to access them in any of your Apps.
+You haven't added any account secrets yet.
+Connected Services
+Services you use to sign in to Replit
+Google
+Facebook
+Apple
+Domains
+No managed domains found.
+Themes
+Official Themes
+dark
+RE
+
+replit
+replit
+light
+RE
+
+replit
+replit
+Custom Themes
+Themes you create will appear here.
+Installed from Community
+Themes you install will appear here.
+Account - Replit
+
+Replit is the fastest way to go from idea to app. Create and publish full-stack apps from your browser with AI at your fingertips—no installation or setup required.
+
+Replit is an AI-powered platform that lets you create and publish apps from a single browser tab. Instead of wrestling with complex development environments, you get coding, publishing, and collaboration tools in one integrated interface.
+Replit Workspace
+Building apps traditionally requires installing programs, languages, and packages—a time-consuming setup process. On Replit, the platform configures your environment instantly, so you can start building whether you’re a beginner or experienced developer.
+You have everything required to create apps from one browser tab—no installation required. With AI coding tools, real-time collaboration, and instant sharing, Replit gets you from idea to app, fast.
+​
+Quickstart guides
+To create your app on Replit, choose the guide that matches your needs:
+​
+Create new apps
+Remix an existing app
+⏱️ 1 minute
+Jump-start your project by building on community-contributed apps.
+Ask AI
+⏱️ 7 minutes
+Use the AI-powered Replit tools to create, explain, and debug your app.
+Build from Scratch
+⏱️ 15 minutes
+Create a full-stack app with complete control.
+​
+Import existing projects
+Import from GitHub
+⏱️ 2 minutes
+Import an existing GitHub repository into Replit.
+Import from Figma
+⏱️ 3 minutes
+Convert your Figma designs into functional React applications.
+Import from Bolt
+⏱️ 4 minutes
+Migrate your Bolt projects to Replit with Agent assistance.
+Import from Lovable
+⏱️ 4 minutes
+Transfer your Lovable projects to Replit and continue building.
+​
+Workspace features
+Replit provides the following essential app creation tools:
+Real-time preview of your app
+Publish in minutes
+Browser native app that requires zero installation and configuration
+Full-featured code editor
+Mobile app for building apps from your phone or tablet
+AI-assisted app creation
+Version control integration for tracking changes
+Team collaboration for building together
+​
+AI companion capabilities
+Replit Agent accelerates app creation with the following capabilities:
+Complete app generation and setup from natural language descriptions
+Code suggestions and autocomplete
+Automated error detection and debugging assistance
+Documentation generation for your app
+​
+Share in minutes
+Publish your apps in minutes using the following tools:
+App publishing to the cloud in a few clicks
+Database integration and hosting
+Custom domain support and connection encryption for your applications
+​
+Additional information
+To learn more about all of Replit’s features, see the following resources:
+Starter Plan: Learn about Starter plan features and what you can build for free
+Learn about the Workspace features from Workspace Features.
+Learn about the capabilities of the Replit AI-powered features from Replit Agent.
+Learn how to share your creations from Sharing Your Replit App.
+Download the mobile app for iOS or Android devices.
+
+Skip to main content
+Replit home pagedark logo
+Docs
+Tutorials
+Trust & Billing
+Teams & Enterprise
+Changelog
+Start Building
+
+Search...
+Ctrl K
+
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+
+Features
+
+Integrations
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+Advanced Configuration
+Storage and Databases
+Overview
+
+Databases
+
+App Storage
+Platforms
+Mobile App
+Desktop App
+ChatGPT
+Additional Resources
+CLUI
+Cheat Sheet
+FAQ
+
+Core Concepts
+Replit AI
+
+Copy page
+
+Replit’s AI-powered tools help you turn ideas into production-ready apps.
+
+Replit AI transforms how you build software with Agent, our AI-powered development assistant. Agent allows you to build entire applications in minutes, without knowing how to code.
+New with Agent 3 - Extended autonomous builds with minimal supervision, App Testing for self-validation, Fast and Full build modes, and Agents & Automations for building your own autonomous systems.
+​
+What you can build
+With Agent, you can:
+Transform ideas into apps: Describe your vision in plain language and watch Agent build a complete application
+Accelerate development: Get instant code explanations, intelligent autocomplete, and contextual help
+Debug efficiently: Identify and fix issues with AI-powered analysis and suggestions
+Learn as you build: Receive detailed explanations and best practice recommendations
+Learn more about Agent in the following video:
+
+​
+Getting started
+The fastest way to experience Replit AI is to create your first app with Agent:
+Start with Agent: Follow the Create with AI quickstart to build an app from scratch
+Choose your build mode: Select Fast for lightweight apps or prototypes (~3-5 mins) or use the default full build for a thorough implementation of your request (~10+ mins)
+Experience Agent 3’s autonomy: Customize Agent’s Autonomy Level while it tests itself with App Testing
+Set up billing: Configure usage alerts and budgets to control your AI spending
+Agent is a premium feature that charges your Replit account based on usage. For pricing information and billing policies, see Replit AI Billing.
+​
+Accessing Agent
+You can access Agent from any Replit App:
+Tools dock: Find Agent in the left sidebar of your Workspace
+Create new app: Start with Agent directly from the “Create a new App” screen
+Agent is now available on all projects. Use General Agent to work with any framework or project type, including existing apps and Developer Framework templates.
+​
+Key capabilities
+Agent offers powerful features that revolutionize your development workflow:
+Complete app generation
+Natural language descriptions become functional applications
+Intelligent architecture decisions and best practices
+Automatic environment setup and dependency management
+Seamless integration of databases, file storage, and third-party services
+Interactive development
+Chat-based interface for complex requests
+File attachments and web content integration
+Rollback capabilities for safe experimentation
+Real-time progress tracking and feedback
+Autonomous development (New in Agent 3)
+App Testing: Automated computer use testing for the Agent to spin up a browser and test its own work, just like a real user
+Autonomy Level: Customize how independently Agent works and reviews code, from hands-on control to extended autonomous development
+Agents & Automations: for building your own autonomous systems
+​
+Use cases
+​
+Build a complete app with Agent
+Describe your app idea in natural language and let Agent handle the implementation:
+Agent creating an app from a text description
+​
+Add complex integrations
+Integrate payment processing, APIs, or advanced features using natural language:
+
+​
+Pricing and billing
+Agent uses transparent, effort-based pricing designed to provide value at every level:
+Agent: Effort-based pricing that charges based on the complexity and scope of your requests
+Simple changes cost less than complex builds
+One meaningful checkpoint per request
+Extended autonomous builds with less supervision and self-testing capabilities
+Advanced capabilities for complex builds
+Agent 3 features: App Testing, build modes, and Agents & Automations
+Learn more about AI billing and how to manage your spend.
+​
+Next steps
+Ready to start building with Agent? Choose your path:
+Try Agent
+Experience Agent 3’s autonomous development with extended builds and less supervision
+View Pricing
+Understand costs and set up billing controls
+Quick Start
+Build your first autonomous AI-powered app in minutes
+
+Was this page helpful?
+
+
+Yes
+
+No
+Import from ZIP
+Previous
+Replit Agent
+Next
+Ask a question...
+
+x
+linkedin
+youtube
+
+Skip to main content
+Replit home pagedark logo
+Docs
+Tutorials
+Trust & Billing
+Teams & Enterprise
+Changelog
+Start Building
+
+Search...
+Ctrl K
+
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+Fast Mode
+App Testing
+Autonomy Level
+Checkpoints and Rollbacks
+Plan Mode
+
+Features
+
+Integrations
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+Advanced Configuration
+Storage and Databases
+Overview
+
+Databases
+
+App Storage
+Platforms
+Mobile App
+Desktop App
+ChatGPT
+Additional Resources
+CLUI
+Cheat Sheet
+FAQ
+
+Autonomy & validation
+Fast Mode
+
+Copy page
+
+Make targeted changes in seconds with Agent’s Fast mode. Up to 5x faster and typically cheaper per prompt than autonomous mode.
+
+Fast mode is a lightning-quick version of Replit Agent optimized for targeted changes. Get visual tweaks, bug fixes, and reasonable-sized features in 10-60 seconds instead of waiting minutes. Perfect for rapid iteration and pair programming.
+​
+What is Fast Mode?
+Fast mode is a specialized Agent experience designed for speed and precision. While the full Agent excels at creating comprehensive applications and implementing complex features, Fast mode focuses on quick, scoped changes that don’t require extensive planning or testing.
+Fast mode requires an existing app or project. Use Fast mode to make changes within apps you’ve already created. To build a new app from scratch, use the full Agent experience.
+Think of Fast mode as your pair programming partner for those moments when you need focused changes within your existing app. It’s built to keep you in flow without having to step away from your computer while waiting for longer builds to complete.
+Fast mode is primarily accessed via the lightning bolt (⚡) icon in the Agent prompt box, and can also be toggled through the Autonomy level control in Agent Tools.
+Agent input box showing the lightning bolt Fast mode icon available for selection
+​
+When to Use Fast Mode
+Fast mode is ideal for:
+Visual tweaks: Adjusting colors, spacing, fonts, or layout elements
+Reasonable-sized features: Adding search bars, creating loading states, building form validation, or adding sorting functionality
+Quick fixes: Correcting typos, fixing broken links, or addressing minor bugs
+Rapid iteration: Making a series of focused changes while actively developing
+Scoped updates: When you know exactly what you want changed and don’t need extensive planning
+Fast mode may not be suitable for:
+Creating new apps: Fast mode only works within existing apps—use full Agent to start from scratch
+Complex features: Multi-file changes that require architectural decisions
+Large-scale refactoring: Restructuring code across multiple components
+New integrations: Adding third-party APIs or services
+Database schema changes: Modifying data structures or relationships
+For these larger tasks, use the full Agent experience which includes comprehensive planning, testing, and validation.
+​
+Features
+Fast mode delivers a streamlined development experience with the following capabilities:
+Lightning-fast execution: Complete most changes in 10-60 seconds
+Targeted modifications: Makes only the changes you request without expanding scope
+Cost-effective development: Typically cheaper per prompt than autonomous mode
+Real-time pair programming: Stay at your computer and keep building without long waits
+Predictable results: Focused changes mean fewer surprises and more control
+​
+How to Use Fast Mode
+​
+Primary Access: Lightning Bolt Button
+The quickest way to toggle Fast mode is using the lightning bolt (⚡) icon in the Agent prompt box:
+Agent input box with Fast mode enabled, showing 'Quick, lightweight changes' text and highlighted lightning bolt icon
+Open Agent in your Replit App
+Click the ⚡ icon in the prompt box to enable Fast mode
+Make your request—keep it focused and specific
+Toggle off when you need full Agent for complex tasks
+​
+Alternative Access: Agent Tools
+You can also access Fast mode from Agent Tools:
+Agent Tools panel showing Fast mode option with 'Make lightweight changes, quickly' description and Autonomous option below with autonomy level controls
+Open the Agent Tools panel and select Fast from the options. Fast mode and Autonomous mode are two distinct approaches: choose Fast when you want quick results while staying at your computer, or Autonomous when you prefer more reliable, longer builds and can step away for a few minutes or more.
+​
+Example Prompts
+Good for Fast mode:
+“Change the submit button text from ‘Send’ to ‘Submit Application’”
+“Increase the padding in the card component to 24px”
+“Add email validation to the signup form”
+“Make the sidebar background color darker”
+“Add a search bar to filter the product list”
+“Create a loading spinner when data is fetching”
+Use full Agent for:
+“Build a new todo app from scratch”
+“Redesign the entire user dashboard”
+“Add user authentication with Replit Auth”
+“Integrate Stripe payment processing”
+“Add a Linear connector”
+​
+How Fast Mode Works
+Fast mode uses a streamlined version of Agent’s AI technology that’s optimized for speed and scoped changes:
+Focused analysis: Fast mode analyzes only the relevant files for your specific request
+Direct implementation: Makes changes immediately without extensive planning phases
+Streamlined execution: Skips comprehensive testing and architecture review for faster results
+Quick validation: Performs basic checks to ensure changes don’t break existing functionality
+This approach allows Fast mode to deliver results up to 5x faster for scoped requests while maintaining quality for the types of focused, well-defined changes it’s designed to handle.
+​
+What’s Different in Fast Mode
+To achieve faster speeds, Fast mode disables certain features:
+Disabled in Fast mode:
+Autonomy levels: Fast mode and Autonomous mode are mutually exclusive—choose Fast for speed or Autonomous for reliability
+App Testing: No automated browser testing
+Architect: No architectural analysis
+Still available:
+Web search: Access real-time information
+Other Agent tools: File operations, code editing, image generation, and more
+Starter plan users can only use Fast Mode: To try the full Autonomous mode, you will need to be on a paid plan.
+​
+Pricing
+Fast mode offers cost-effective pricing that’s typically cheaper per prompt than using autonomous mode. The exact cost depends on the complexity and scope of your request, but Fast mode’s streamlined approach means you’ll generally pay less for focused, scoped changes.
+Effort-based pricing: Fast mode uses the same effort-based pricing model as full Agent. Because Fast mode completes tasks more quickly and with a more focused scope, the total cost per request is typically lower than using autonomous mode for the same change.
+For detailed information about AI pricing and how effort is calculated, see AI billing.
+​
+Use Cases
+Visual iteration: Quickly try different colors, spacing, and layouts while actively designing
+Reasonable-sized features: Add scoped functionality like search filters, form validation, or loading states
+Bug fixes: Polish details rapidly before launch
+​
+Comparison: Fast Mode vs. Full Agent
+Feature	Fast Mode	Full Agent
+Speed	10-60 seconds	3-10+ minutes
+Best for	Targeted, scoped changes	Complex features and full apps
+Scope	Focused, well-defined requests	Multi-file, architectural changes
+Testing	Basic validation	Comprehensive App Testing
+Code Review	None	Available with autonomy levels
+Planning	Minimal	Detailed task lists and proposals
+Cost	Typically cheaper per prompt	Higher but more capable
+​
+Tips for Success
+Use Fast mode for iteration and full Agent for new features
+Keep requests specific for the fastest results
+Switch modes when needed: If your change requires multiple files or complex logic, toggle off Fast mode
+Review changes immediately while context is fresh
+​
+Frequently Asked Questions
+Can I use Fast mode with full Agent in the same project?
+
+What if my Fast mode request is too complex?
+
+Does Fast mode work with all programming languages and frameworks?
+
+How much does Fast mode cost compared to autonomous mode?
+
+​
+Next Steps
+Ready to experience faster development with Fast mode?
+Try Fast mode now: Open any Replit App and enable Fast mode to make your first quick change
+Learn effective prompting: Review the vibe coding guide for tips on working with AI
+Explore Agent capabilities: Learn about full Agent mode for building comprehensive features
+Understand pricing: Review AI billing to understand how effort-based pricing works
+Start building faster today with Fast mode!
+Was this page helpful?
+
+
+Yes
+
+No
+Replit Agent
+Previous
+App Testing
+Next
+Ask a question...
+
+x
+linkedin
+youtube
+
+Skip to main content
+Replit home pagedark logo
+Docs
+Tutorials
+Trust & Billing
+Teams & Enterprise
+Changelog
+Start Building
+
+Search...
+Ctrl K
+
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+Fast Mode
+App Testing
+Autonomy Level
+Checkpoints and Rollbacks
+Plan Mode
+
+Features
+
+Integrations
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+Advanced Configuration
+Storage and Databases
+Overview
+
+Databases
+
+App Storage
+Platforms
+Mobile App
+Desktop App
+ChatGPT
+Additional Resources
+CLUI
+Cheat Sheet
+FAQ
+
+Autonomy & validation
+App Testing
+
+Copy page
+
+Agent’s self-testing feature that validates your app’s functionality using an actual browser, with visual feedback and automatic issue resolution.
+
+App Testing is a powerful new feature in Agent 3 that allows Agent to test itself using an actual browser. Agent tests the apps it builds by navigating through your application like a real user would, clicking around and validating functionality. This self-testing capability helps ensure your app works correctly and allows Agent to catch and fix issues automatically.
+New in Agent 3: App Testing represents a major advancement in Agent’s autonomous capabilities, enabling more reliable and higher-quality app development.
+​
+How App Testing works
+Watch App Testing in action as Agent navigates through your app:
+When App Testing is enabled, Agent will periodically decide to test itself when it thinks enough has changed to deem it necessary. Agent doesn’t test after 100% of user messages, but intelligently determines when testing would be most valuable.
+At this time, App Testing is available for Full Stack JavaScript and Streamlit Python web applications.
+​
+Key Benefits
+Extended Autonomy: Enables Agent to work for longer periods without requiring human intervention
+Higher Quality: Produces apps with fewer mistakes by identifying and addressing issues early
+Cost Efficiency: Prevents the need for additional debugging sessions by catching problems during development
+Interactive Review: Provides video replays and section-by-section navigation for thorough result analysis
+​
+The Testing Process
+When Agent decides to test itself, here’s what happens:
+Browser Preview: You’ll see a browser preview within the Agent pane
+Visual Testing: Watch Agent’s cursor as it clicks around your app, testing functionality
+Real User Simulation: Agent navigates through your application just like a real user would, entering mock data when necessary
+Automatic Analysis: Agent analyzes the test results and identifies any issues
+Self-Correction: Agent reports back with a summary of its tests and automatically fixes any issues that crop up
+​
+Key capabilities
+Agent intelligently tests your application by navigating through it like a real user would, covering:
+User interface validation: Buttons, forms, navigation, and visual elements
+Functionality verification: Core features and user workflows
+Integration testing: API calls, database interactions, and third-party services
+Performance and accessibility: Load times, responsiveness, and accessibility standards
+​
+Usage
+App Testing can be toggled on/off within the “Agent Tools” section of the input box within your Repl. When enabled, Agent intelligently decides when to test based on the changes made to your app.
+App Testing is part of Agent 3’s autonomous capabilities. Learn more about Autonomy Level settings and other Agent features.
+​
+Take over
+Sometimes the Agent will encounter a roadblock during testing that it needs your help with to continue. Most commonly this involves logging in to a user account (e.g. Gmail). In these cases, the Agent will pop up with a button to “Begin take over.”
+App Testing take over interface showing Skip and Begin take over buttons with instructions for handling errors and CAPTCHAs
+Pressing “Begin take over” enables you to click into the testing preview, complete the requisite steps, then allow the Agent to continue. You can also press “Skip” to skip take over, ending the App Testing if the Agent cannot proceed without your help. If you do not respond within 10 minutes, the Agent will continue as if you pressed “Skip.”
+​
+What to expect
+Skip option: Use the skip button to bypass testing if needed and continue with development
+Interactive video replay: After testing, click the video to replay the entire testing session
+Section navigation: Use the sliders at the bottom to jump to specific sections of the test
+The interactive replay interface allows you to review the complete testing session:
+Interactive video replay interface showing the testing session with navigation controls
+​
+Troubleshooting
+Tests failing unexpectedly
+Try skipping then prompting again to test
+Check for dynamic content that might affect test timing
+Review test scenarios for accuracy
+Missing test coverage
+Provide more detailed descriptions of your app’s functionality
+Explicitly mention critical user flows that should be tested
+App Testing not working at all?
+App Testing only works with web applications* at this time
+​
+Pricing and usage
+App Testing is included as part of Agent’s effort-based pricing model with important cost considerations:
+Usage-based: Testing is charged based on the effort spent (simpler tests are less expensive)
+Cost vs. Benefit: While testing costs money, it can save costs by avoiding additional prompts and extra work from Agent by catching mistakes earlier
+Efficient Development: Automated approach reduces the need for manual debugging and rework
+Cost-Effective Testing: Although App Testing adds to your usage costs, it often saves money overall by preventing the need for additional Agent sessions to fix issues that could have been caught during testing.
+​
+Next steps
+Ready to use App Testing with your projects?
+Start Building: Create an app with Agent and let testing activate automatically
+Review Results: Examine test reports and implement suggested improvements
+Iterate: Use test feedback to refine your application
+Scale Up: Apply App Testing to larger, more complex projects
+Learn more about Replit Agent and other Agent 3 autonomous features.
+Was this page helpful?
+
+
+Yes
+
+No
+Fast Mode
+Previous
+Autonomy Level
+Next
+Ask a question...
+
+x
+linkedin
+youtube
+
+kip to main content
+Replit home pagedark logo
+Docs
+Tutorials
+Trust & Billing
+Teams & Enterprise
+Changelog
+Start Building
+
+Search...
+Ctrl K
+
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+Fast Mode
+App Testing
+Autonomy Level
+Checkpoints and Rollbacks
+Plan Mode
+
+Features
+
+Integrations
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+Advanced Configuration
+Storage and Databases
+Overview
+
+Databases
+
+App Storage
+Platforms
+Mobile App
+Desktop App
+ChatGPT
+Additional Resources
+CLUI
+Cheat Sheet
+FAQ
+
+Autonomy & validation
+Autonomy Level
+
+Copy page
+
+Control Agent…
+# Plan Mode
+
+> Plan mode allows you to brainstorm ideas, plan work, and collaborate with Replit Agent without editing your app's code or data.
+
+Plan mode introduces a new way of chatting with Replit Agent that focuses on asking questions, brainstorming, and planning your work.
+
+<Frame>
+  <img src="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=247073a58dc0196b6fb486fd32653fbd" alt="Agent chat interface in Plan mode" data-og-width="916" width="916" data-og-height="362" height="362" data-path="images/replitai/plan-mode-overview.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=280&fit=max&auto=format…
+# Agent integrations
+
+> Agent supports numerous integrations enabled automatically when your prompt contains specific keywords.
+
+export const AiPrompt = ({children}) => {
+  return <CodeBlock className="relative block font-sans whitespace-pre-wrap break-words">
+      <div className="pr-7">
+        {children}
+      </div>
+    </CodeBlock>;
+};
+
+<Frame>
+  <img src="https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=d98e494833cceffef3c48d9abcdf047f" alt="Agent logo with integration connections illustrated around it" data-og-width="1280" width="1280" data-og-height="720" height="720" data-path="images/replitai/agent-logo.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/AZ…
+Skip to main content
+Replit home pagedark logo
+Docs
+Tutorials
+Trust & Billing
+Teams & Enterprise
+Changelog
+Start Building
+
+Search...
+Ctrl K
+
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+Fast Mode
+App Testing
+Autonomy Level
+Checkpoints and Rollbacks
+Plan Mode
+
+Features
+Agents & Automations
+Stripe Payments Integration
+General Agent
+Image generation
+Message Queue
+Design Mode
+Native Mobile Apps
+replit.md
+Web Search
+
+Integrations
+AI
+Connectors
+
+Model Context Protocol
+Overview
+Directory
+Install links
+Figma
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+A…
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+Fast Mode
+App Testing
+Autonomy Level
+Checkpoints and Rollbacks
+Plan Mode
+
+Features
+Agents & Automations
+Stripe Payments Integration
+General Agent
+Image generation
+Message Queue
+Design Mode
+Native Mobile Apps
+replit.md
+Web Search
+
+Integrations
+AI
+Connectors
+
+Model Context Protocol
+Overview
+Directory
+Install links
+Figma
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+Advanced Configuration
+Storage and Databases
+Overview
+
+Databases
+
+App Storage
+Platforms
+Mobile App
+Desktop App
+ChatGPT
+Additional Resources
+CLUI
+Cheat Sheet
+FAQ
+
+# Plan Mode
+
+> Plan mode allows you to brainstorm ideas, plan work, and collaborate with Replit Agent without editing your app's code or data.
+
+Plan mode introduces a new way of chatting with Replit Agent that focuses on asking questions, brainstorming, and planning your work.
+
+<Frame>
+  <img src="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=247073a58dc0196b6fb486fd32653fbd" alt="Agent chat interface in Plan mode" data-og-width="916" width="916" data-og-height="362" height="362" data-path="images/replitai/plan-mode-overview.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=280&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=4b5c1764d2067d556b5cda837804038c 280w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=560&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=31c62310f6aeffb9ced828a04e0e60f6 560w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=840&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=3a96bffa0244e0f85ab40de4a6c4ea06 840w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=1100&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=56ae77bc529318da12b7df4c7f281347 1100w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=1650&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=bd6b30b91e0ccef9b2eb5ea817a558ab 1650w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-overview.png?w=2500&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=38116a784e857fba77e4c6393b10727d 2500w" />
+</Frame>
+
+## What is Plan Mode?
+
+Plan mode enables you to:
+
+* *Brainstorm ideas* and explore different approaches to your project
+* *Plan development work* with structured task lists
+* *Collaborate with AI* on project architecture and feature planning
+* *Get strategic guidance* and ask questions without modifying your project's code or data
+* *Transition seamlessly* to Build mode when you're ready to implement
+
+The default mode is now referred to as *Build* mode.
+
+Unlike Build mode, Plan mode focuses on planning and ideation, helping you think through projects before writing code.
+
+## Getting Started
+
+### Accessing Plan Mode
+
+Plan mode is available in any Replit App that has Agent enabled. To access it:
+
+1. *Open your Replit App* workspace
+2. *Look for the mode selector* at the bottom left of the chat input box
+3. *Choose Plan mode* from the dropdown
+
+<Frame>
+  <img src="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=19e04b960deaf929b954f0639ffa6aa3" alt="Mode selector showing Plan mode and Build mode options" data-og-width="918" width="918" data-og-height="224" height="224" data-path="images/replitai/plan-mode-selector.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?w=280&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=83a90bab4a70a682d8a3ebcbc53e0e7f 280w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?w=560&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=6b858477c21f75b2e399285997f91b3b 560w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?w=840&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=7990a3bf19705df047f641cc1fd61dc0 840w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?w=1100&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=0eecff37312041ec8c3a05fe40d31839 1100w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?w=1650&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=ee2c926fcd446d463331b8d7218ab2ed 1650w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-selector.png?w=2500&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=b58250e516d635a60a55465782474749 2500w" />
+</Frame>
+
+## Key Features
+
+### Task Planning
+
+Plan mode excels at breaking down complex projects into manageable tasks. Provide the Agent some requirements and it will generate an ordered task list of the development tasks necessary to complete your request.
+
+<Frame>
+  <img src="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=6e5a76ea4a3da7840f6ac26f4e3e608e" alt="Generated task list with priorities and dependencies" data-og-width="924" width="924" data-og-height="1180" height="1180" data-path="images/replitai/plan-mode-task-list.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?w=280&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=8cef821afa01895ad509365f46ae2888 280w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?w=560&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=537c141d38b8803a6626b4faa4261f50 560w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?w=840&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=7faa437048b0e4698afe32e6c3070381 840w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?w=1100&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=d67a9c6711edc2cc489afbfab58fbd39 1100w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?w=1650&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=df6bf7ba37eb5ca748b0e5e0cb8de05f 1650w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-task-list.png?w=2500&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=6cb84ab3bf307bfed4acaafd32f2b091 2500w" />
+</Frame>
+
+### Collaborative Brainstorming
+
+Work together with AI to explore different approaches:
+
+* *Multiple solution paths* for complex problems
+* *Pros and cons analysis* of different approaches
+* *Risk assessment* and mitigation strategies
+
+## Workflow: From Planning to Building
+
+### 1. Planning Phase (Plan Mode)
+
+Start your development process in Plan mode:
+
+* *Define your project scope* and objectives
+* *Break down requirements* into specific features
+* *Plan your architecture* and technology stack
+* *Create a development roadmap* with milestones
+
+### 2. Task Approval
+
+When Agent generates a task list:
+
+* *Review* the proposed tasks
+* Select *Start building* to approve the plan
+
+or, keep chatting to refine the plan.
+
+### 3. Transition to Build Mode
+
+When you're ready to start implementing:
+
+* *Click "Start building"* to approve the plan
+* *Agent automatically switches* to Build mode
+* *Agent begins implementation* of approved tasks
+* *Track progress* through the development phase
+
+Plan Mode usage follows the same effort-based pricing as other Agent interactions. You are charged for all Agent work in Plan Mode, including answering questions, providing guidance, and generating task lists. Charges scale up for more complex requests, or requests in longer context conversations.
+
+*All Agent interactions are billable* - whether Agent responds with text guidance or makes code changes, there is always a charge, though smaller requests cost less.
+
+## Use Cases
+
+### Feature Planning
+
+Ideal for adding new functionality:
+
+* *Break down complex features* into implementable tasks
+* *Plan database changes* and API modifications
+* *Design user interface* and user experience flows
+* *Consider edge cases* and error handling
+
+<Frame>
+  <img src="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=d8cc6f9a8e6a09c137a00f849b282ffb" alt="Planning phase showing project scope and requirements discussion" data-og-width="924" width="924" data-og-height="862" height="862" data-path="images/replitai/plan-mode-planning.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?w=280&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=a9cb9e0f0dd58593a07f6299974985c4 280w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?w=560&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=3d02d7b02dacd0d32a73a01d8ec7e483 560w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?w=840&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=7334e99f8adf8beded8309379c531aab 840w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?w=1100&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=f7f40d06a9cb4b4ea2679e3a736bfe95 1100w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?w=1650&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=1922d419dae3973612b6b8c3654eab57 1650w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-planning.png?w=2500&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=d29224ba8150878141af3763b8dd9945 2500w" />
+</Frame>
+
+### Learning and Exploration
+
+Excellent for educational purposes:
+
+* *Understand different approaches* to solving problems
+* *Learn about new technologies* and frameworks
+* *Explore design patterns* and best practices
+* *Get guidance* on development methodologies
+
+<Frame>
+  <img src="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=237a4802c3090561db5b22bc1a705dc8" alt="Asking questions to Agent in Plan mode" data-og-width="922" width="922" data-og-height="584" height="584" data-path="images/replitai/plan-mode-conversation.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?w=280&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=dc6222556189b6e76ef7544a8881204f 280w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?w=560&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=dbd4cd557f20f30153da510e1d11b3bd 560w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?w=840&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=8f1da4c65d1e5a1746ff2533c704fb78 840w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?w=1100&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=a509d6607aad7ebcede3bae5cf9d662d 1100w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?w=1650&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=adadcfc7726139736a450dc4ed79e144 1650w, https://mintcdn.com/replit/F1Uusll-kiG71hlC/images/replitai/plan-mode-conversation.png?w=2500&fit=max&auto=format&n=F1Uusll-kiG71hlC&q=85&s=8c3441a786c1d6a93af13f5d6c124b03 2500w" />
+</Frame>
+
+## Best Practices
+
+### Effective Prompting
+
+To get the most out of Plan mode:
+
+* *Be specific* about your project requirements
+* *Ask follow-up questions* to clarify AI suggestions
+* *Request examples* when discussing complex concepts
+* *Discuss trade-offs* between different approaches
+* *Iterate on ideas* before committing to implementation
+* *Save important decisions* by referencing them in follow-up conversations
+
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.replit.com/llms.txt
+
+ Agent integrations
+
+> Agent supports numerous integrations enabled automatically when your prompt contains specific keywords.
+
+export const AiPrompt = ({children}) => {
+  return <CodeBlock className="relative block font-sans whitespace-pre-wrap break-words">
+      <div className="pr-7">
+        {children}
+      </div>
+    </CodeBlock>;
+};
+
+<Frame>
+  <img src="https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=d98e494833cceffef3c48d9abcdf047f" alt="Agent logo with integration connections illustrated around it" data-og-width="1280" width="1280" data-og-height="720" height="720" data-path="images/replitai/agent-logo.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?w=280&fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=6fb21064203dfefe200f04d8ae904240 280w, https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?w=560&fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=a74edbd65ec1a9607ba8d4e63e4155ba 560w, https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?w=840&fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=7729f87fe2b932eb7e988fd83aa5ea4c 840w, https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?w=1100&fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=b1e377a10e6c51a5d017a4b9d12c1d77 1100w, https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?w=1650&fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=cfcb43143d10d7e6de1c69dd3196f86d 1650w, https://mintcdn.com/replit/AZ1L8RlIroSxuJDa/images/replitai/agent-logo.png?w=2500&fit=max&auto=format&n=AZ1L8RlIroSxuJDa&q=85&s=2246ca457c164c03119a596f2a48be47 2500w" />
+</Frame>
+
+Agent supports three types of integrations so you can go from idea to app, fast:
+
+* *Replit managed*: Built-in integrations that work automatically. Create an app and your Agent can start using these right away.
+* *Connectors*: First-party integrations Replit supports. Sign in once, then build with them across your apps.
+* *External integrations*: Trusted third-party services you can build with. Ask Agent to set them up; you'll provide API keys.
+
+<Note>
+  *Core and Teams only*: Third-party connectors require a Core or Teams subscription. Starter plan users can use Replit-managed integrations like databases, authentication, etc.
+</Note>
+
+## Getting started
+
+To use an integration, mention the service or functionality you need. For example:
+
+<AiPrompt>
+  Create a web app that uses Stripe to accept payments and SendGrid to send confirmation emails
+</AiPrompt>
+
+Agent automatically detects these keywords and implements the necessary code and configuration.
+
+## Replit managed integrations
+
+These built-ins require no setup. Just ask Agent to use them.
+
+<AccordionGroup>
+  <Accordion title="Replit Database">
+    A simple built-in database for storing app data quickly.
+    <AiPrompt>Add Replit Database to my app</AiPrompt>
+  </Accordion>
+
+  <Accordion title="PostgreSQL">
+    Managed PostgreSQL for relational data and SQL queries.
+    <AiPrompt>Use PostgreSQL in my app for relational data</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Replit App Storage">
+    Built-in storage for app files and assets.
+    <AiPrompt>Use Replit App Storage to save files</AiPrompt>
+  </Accordion>
+
+  <Accordion title="App Storage">
+    Cloud-based storage for images, videos, and other files.
+    <AiPrompt>Add App Storage to my app to store files</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Replit Auth">
+    Native authentication so people can sign in with Replit.
+    <AiPrompt>Add Replit Auth to my app</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Replit Domains">
+    Configure and manage custom domains for your app.
+    <AiPrompt>Set up a custom domain for my app</AiPrompt>
+  </Accordion>
+</AccordionGroup>
+
+## Connectors
+
+Connectors let Agent build with your real data. They are first-party integrations supported by Replit. Sign in once on the Connectors page in your Workspace, then reuse those connections across apps.
+
+<Note>
+  Connections are tied to your Replit account and persist across all your apps. Connect a service once and use it in any app you create.
+</Note>
+
+### Available connectors
+
+<AccordionGroup>
+  <Accordion title="Google Workspace" icon="google">
+    * *Google Drive*: Access and manage files and folders
+    * *Google Docs*: Create, read, and edit documents
+    * *Google Sheets*: Read and write spreadsheet data
+    * *Google Calendar*: Read and write events and settings
+    * *Gmail*: Send, receive, and manage emails
+  </Accordion>
+
+  <Accordion title="Microsoft 365" icon="microsoft">
+    * *OneDrive*: Access and manage files and folders
+    * *Outlook*: Send, receive emails and manage calendar events
+    * *SharePoint*: Read, write, and manage sites and documents
+  </Accordion>
+
+  <Accordion title="Developer tools" icon="code">
+    * *GitHub*: Access repositories, users, and organizations
+    * *Linear*: Create and manage issues, comments, and schedules
+    * *Jira*: Read users and manage work items and issues
+    * *Asana*: Read tasks and project data
+    * *Confluence*: Read users and groups, write content to spaces
+  </Accordion>
+
+  <Accordion title="Cloud storage" icon="cloud">
+    * *Dropbox*: Read files, content, and metadata
+    * *Box*: Read and access files and folders
+  </Accordion>
+
+  <Accordion title="Communication" icon="comments">
+    * *Discord*: Access guild information and user profiles
+    * *Twilio*: Send SMS messages and make voice calls
+    * *SendGrid*: Send transactional emails
+    * *Resend*: Send transactional emails
+  </Accordion>
+
+  <Accordion title="CRM and sales" icon="building">
+    * *Salesforce*: Access CRM data and perform operations via REST API
+    * *HubSpot*: Read CRM objects, contacts, and deals
+    * *Zendesk*: Read and write access to Ticket API for support workflows
+  </Accordion>
+
+  <Accordion title="Productivity" icon="list-check">
+    * *Notion*: Read and write to workspaces and pages
+    * *Spotify*: Access and manage playlists and library
+    * *YouTube*: Upload, manage videos, channels, and access analytics
+  </Accordion>
+</AccordionGroup>
+
+### Accessing Connectors
+
+You can access Connectors from the sidebar in your Workspace:
+
+<Steps>
+  <Step title="Navigate to your Workspace">
+    Open the Workspace for your app.
+  </Step>
+
+  <Step title="Select Connectors">
+    Select *Connectors* from the sidebar.
+  </Step>
+
+  <Step title="Add new integration">
+    Choose *Add new integration* to browse available connectors.
+  </Step>
+
+  <Step title="Connect">
+    Select *Connect* next to the service you want to integrate.
+  </Step>
+</Steps>
+
+<Tip>
+  To disconnect a service, return to the Connectors panel and select *Manage* next to the connected service.
+</Tip>
+
+<Frame>
+  <img src="https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=44fc5899e21e5b11318ab41887ff86b5" alt="App connectors interface showing available integrations including GitHub, OneDrive, Outlook, Spotify, Linear, Dropbox, Monday.com, Google Docs, and YouTube with their connection status and manage options" data-og-width="3456" width="3456" data-og-height="1688" height="1688" data-path="images/replitai/connectors-overview.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?w=280&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=a29a9a200192b7bb1d38c965c02ee2e7 280w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?w=560&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=c4439e6d64eb334e36788c4f4fe0b82d 560w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?w=840&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=b37a91a43d6f777067065c5205a78ac2 840w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?w=1100&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=14f7b62cbd8d547982041e5fc6664bd8 1100w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?w=1650&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=e81016cf278b65d14ec90d4d083947c6 1650w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-overview.png?w=2500&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=59c7ef34d36cbbc84b83d3449d333dc0 2500w" />
+</Frame>
+
+When you select Connect for a service, Replit redirects you to authenticate with that service and grant permissions for Replit to access your data:
+
+<Frame>
+  <img src="https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=16716e418094fdc09882d1e6e2d0103f" alt="OAuth authentication flow showing the Linear connection dialog with privacy and security information, explaining data usage and user control" data-og-width="1345" width="1345" data-og-height="1213" height="1213" data-path="images/replitai/connectors-oauth-flow.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?w=280&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=bb6ecf98d2fd81153d03086ad03a972c 280w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?w=560&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=15048c0020083fda0099f28a1510df9c 560w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?w=840&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=228e6341e950c45b5e0d5d21066e0269 840w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?w=1100&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=d2b886cf0baaf0362482010d636001f3 1100w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?w=1650&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=301fe8dba8258a85a84546028c25e738 1650w, https://mintcdn.com/replit/azgaw651Z-a6J23V/images/replitai/connectors-oauth-flow.png?w=2500&fit=max&auto=format&n=azgaw651Z-a6J23V&q=85&s=ae488cc2cdfb5c9ed034f3750774f731 2500w" />
+</Frame>
+
+### Example prompts
+
+* "Integrate with Outlook to create an email dashboard"
+* "Build a GitHub repository manager using my connected GitHub account"
+* "Create a Linear task tracker for my team"
+* "Build a Notion-powered website using my connected Workspace"
+* "Create a Monday.com project dashboard"
+
+<Note>
+  Connectors provide authenticated access to your external services, eliminating the need to manage API keys or authentication tokens manually.
+</Note>
+
+<Tip>
+  Looking for organization-wide connectors? See [Connectors for Organizations](/replitai/connectors-for-organizations).
+</Tip>
+
+## External integrations
+
+Trusted third-party services. Ask Agent to set them up; you'll provide API keys.
+
+<Note>
+  API keys are stored securely in your app's [Secrets](/replit-workspace/workspace-features/secrets). Agent will prompt you to add the key when needed.
+</Note>
+
+### AI providers
+
+<AccordionGroup>
+  <Accordion title="OpenAI">
+    Access GPT models for text generation, analysis, and assistants.
+    <AiPrompt>Create a web app that uses OpenAI to summarize text</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Google AI (Gemini)">
+    Use Gemini models for multimodal understanding and generation.
+    <AiPrompt>Use Google Gemini to analyze and summarize documents</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Anthropic (Claude)">
+    Access Claude models for reasoning, writing, and coding.
+    <AiPrompt>Create a web app that uses Anthropic to generate content</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Perplexity">
+    AI-powered search and answer generation with citations.
+    <AiPrompt>Create a web app that uses Perplexity to answer questions</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Mistral AI">
+    Fast, efficient language models for NLP tasks.
+    <AiPrompt>Use Mistral to extract key facts from text</AiPrompt>
+  </Accordion>
+</AccordionGroup>
+
+### Business and automation
+
+<AccordionGroup>
+  <Accordion title="Workato">
+    Trigger automation recipes and call APIs from your apps.
+    <AiPrompt>Connect my app to a Workato recipe that syncs leads</AiPrompt>
+  </Accordion>
+
+  <Accordion title="Stripe">
+    Process payments and manage subscriptions.
+    <AiPrompt>Add Stripe to my app for payments</AiPrompt>
+
+    See the [Stripe payments guide](/replitai/stripe-payments) for end-to-end setup, testing, and go-live steps.
+  </Accordion>
+
+  <Accordion title="HubSpot">
+    Access CRM data and manage contacts.
+    <AiPrompt>Connect my app to HubSpot to manage contacts</AiPrompt>
+  </Accordion>
+</AccordionGroup>
+
+### Communication and community
+
+<AccordionGroup>
+  <Accordion title="Discord">
+    Send messages and manage servers from your apps.
+    <AiPrompt>Send a message to my Discord channel when a new signup happens</AiPrompt>
+  </Accordion>
+</AccordionGroup>
+
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.replit.com/llms.txt
+
+
+
+Getting Started
+Introduction
+
+Quickstarts
+Core Concepts
+Overview
+Agent
+
+Autonomy & validation
+Fast Mode
+App Testing
+Autonomy Level
+Checkpoints and Rollbacks
+Plan Mode
+
+Features
+Agents & Automations
+Stripe Payments Integration
+General Agent
+Image generation
+Message Queue
+Design Mode
+Native Mobile Apps
+replit.md
+Web Search
+
+Integrations
+AI
+Connectors
+
+Model Context Protocol
+Overview
+Directory
+Install links
+Figma
+
+Visual edits
+Replit Apps
+Overview
+Import
+Collaboration
+Visibility
+Advanced Configuration
+App Embed
+Developer Frameworks
+Replit Workspace
+Overview
+
+Features
+Themes
+Publishing your App
+Overview
+
+Deployment Types
+
+Advanced Configuration
+Storage and Databases
+Overview
+
+Databases
+
+App Storage
+Platforms
+Mobile App
+Desktop App
+ChatGPT
+Additional Resources
+CLUI
+Cheat Sheet
+FAQ

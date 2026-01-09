@@ -4,6 +4,7 @@ Generates complete, functional applications from natural language prompts using 
 """
 import os
 import json
+import re
 import logging
 from typing import Dict, List
 from openai import AsyncOpenAI
@@ -41,8 +42,8 @@ class AIBuilderService:
 This application was generated using AI-powered code generation.
 """
 
-    def _generate_package_json(self, app_name: str) -> str:
-        """Generate a standard package.json"""
+    def _generate_package_json(self, app_name: str, has_router: bool = False) -> str:
+        """Generate a standard package.json with smart dependencies"""
         package = {
             "name": app_name.lower().replace(" ", "-"),
             "version": "1.0.0",
@@ -66,7 +67,87 @@ This application was generated using AI-powered code generation.
                 "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
             }
         }
+        
+        # Auto-add common dependencies
+        if has_router:
+            package["dependencies"]["react-router-dom"] = "^6.20.0"
+        
         return json.dumps(package, indent=2)
+
+    def _extract_imports(self, code: str) -> set:
+        """Extract all import statements from code"""
+        imports = set()
+        import_patterns = [
+            r"from\s+['\"]([^'\"]+)['\"]",  # from 'package'
+            r"import\s+.*\s+from\s+['\"]([^'\"]+)['\"]",  # import ... from 'package'
+            r"import\s+['\"]([^'\"]+)['\"]",  # import 'package'
+        ]
+        
+        for pattern in import_patterns:
+            matches = re.findall(pattern, code)
+            for match in matches:
+                # Extract root package name
+                package = match.split('/')[0]
+                if not package.startswith('.') and package not in ['react', 'react-dom']:
+                    imports.add(package)
+        
+        return imports
+
+    def _auto_inject_dependencies(self, files: list) -> list:
+        """Scan code for imports and ensure package.json has all dependencies"""
+        # Find package.json
+        package_json_file = None
+        for f in files:
+            if f['path'].endswith('package.json'):
+                package_json_file = f
+                break
+        
+        if not package_json_file:
+            return files  # No package.json to update
+        
+        # Scan all JS files for imports
+        all_imports = set()
+        for f in files:
+            if f['path'].endswith(('.js', '.jsx', '.ts', '.tsx')):
+                imports = self._extract_imports(f.get('content', ''))
+                all_imports.update(imports)
+        
+        # Parse existing package.json
+        try:
+            package_data = json.loads(package_json_file['content'])
+            if 'dependencies' not in package_data:
+                package_data['dependencies'] = {}
+            
+            # Common package versions
+            COMMON_DEPS = {
+                'react-router-dom': '^6.20.0',
+                'react-router': '^6.20.0',
+                'axios': '^1.6.0',
+                'react-icons': '^4.12.0',
+                '@reach/router': '^1.3.4',
+                'styled-components': '^6.1.0',
+                'framer-motion': '^10.16.0',
+            }
+            
+            # Auto-add missing dependencies
+            added = []
+            for imp in all_imports:
+                if imp not in package_data['dependencies']:
+                    if imp in COMMON_DEPS:
+                        package_data['dependencies'][imp] = COMMON_DEPS[imp]
+                        added.append(imp)
+                        print(f"🔧 Auto-injected dependency: {imp}")
+            
+            # Update package.json content
+            package_json_file['content'] = json.dumps(package_data, indent=2)
+            
+            if added:
+                print(f"✅ Added {len(added)} missing dependencies: {', '.join(added)}")
+        
+        except Exception as e:
+            print(f"⚠️ Could not auto-inject dependencies: {e}")
+        
+        return files
 
     def _add_deployment_configs(self, app_structure: Dict, tech_stack: Dict[str, str]) -> None:
         """Add deployment configuration files to the app structure"""
@@ -146,67 +227,106 @@ FRONTEND_URL=http://localhost:3000
     async def generate_app_structure(self, prompt: str, tech_stack: Dict[str, str]) -> Dict:
         """Generate complete application structure from prompt"""
         
-        system_prompt = f"""You are an expert full-stack developer. Generate a COMPLETE, FUNCTIONAL, WORKING application - not a template or placeholder.
+        system_prompt = f"""You are a WORLD-CLASS full-stack developer who builds UNIQUE, TAILORED applications.
+
+CRITICAL: Analyze the user's request and build EXACTLY what they ask for. Don't use a template!
+
+🎯 REQUEST ANALYSIS:
+- Clone apps (Netflix, Spotify): Study the REAL app's structure and features
+- Simple tools (calculator, converter): Keep it MINIMAL (1-2 pages max)
+- Business sites: Match the industry (restaurant ≠ law firm ≠ gym)
+- E-commerce: Product-focused with cart/checkout
+- Portfolios: Project showcase focused
+
+📐 SMART SCALING (Not always 5 pages!):
+- Calculators/Tools: 1 page with focused functionality
+- Landing pages: 1-2 pages max
+- Simple businesses: 3-4 pages (Home, Services, About, Contact)
+- Complex sites: 5-8 pages (add FAQ, Pricing, Blog, etc.)
+- Clones: Match the REAL product (Netflix has Browse, Search, Watch, My List, not generic About page)
+
+🎨 CONTENT UNIQUENESS:
+- Netflix clone: Actual genre categories (Action, Comedy, Drama), trending shows, hero video banner
+- Restaurant: Real menu items ("Grilled Salmon $28", not "Product 1")
+- Portfolio: Project names, tech stacks, descriptions
+- Blog: Actual article titles and excerpts
+
+💻 TECHNICAL REQUIREMENTS:
+- Use React Router ONLY if multi-page (include in package.json dependencies!)
+- Single-page apps DON'T need router
+- Component-based architecture
+- Modern CSS (Flexbox/Grid)
+- Working forms with useState hooks
+- Responsive mobile-first design
+
+⚠️ CRITICAL - PACKAGE.JSON DEPENDENCIES:
+ALWAYS include ALL libraries used in code:
+- If using Router → add "react-router-dom": "^6.20.0"
+- If using axios → add "axios": "^1.6.0"
+- If using icons → add "react-icons": "^4.12.0"
+- Base: "react": "^18.2.0", "react-dom": "^18.2.0", "react-scripts": "5.0.1"
+
+📝 CONTENT QUALITY:
+- NO generic "Product 1, Product 2" - use REAL names
+- NO Lorem Ipsum - write actual relevant text
+- Placeholder images: https://via.placeholder.com/WIDTHxHEIGHT
 
 Tech Stack:
 - Frontend: {tech_stack.get('frontend', 'React')}
 - Backend: {tech_stack.get('backend', 'FastAPI')}
 - Database: {tech_stack.get('database', 'MongoDB')}
 
-CRITICAL REQUIREMENTS:
-1. Generate COMPLETE, WORKING code - not TODO comments
-2. Include ALL logic and functionality
-3. Make it IMMEDIATELY RUNNABLE in a preview
-4. Use real CSS styling (make it look good)
-5. Add ALL necessary imports
-6. Generate functional business logic
-
-For example, if user asks for "calculator app":
-- Generate actual calculator with working buttons
-- Include arithmetic operations (+, -, *, /)
-- Style it nicely with CSS
-- Make buttons clickable and functional
-- Display results properly
-
-Generate a JSON response with this EXACT structure:
+JSON STRUCTURE:
 {{
-  "app_name": "string",
-  "description": "string",
+  "app_name": "Professional App Name",
+  "description": "Detailed description",
   "files": [
     {{
-      "path": "string (e.g., frontend/src/App.js)",
-      "content": "string (COMPLETE WORKING CODE)",
-      "language": "string (javascript, python, etc.)"
+      "path": "frontend/src/App.js",
+      "content": "COMPLETE MULTI-PAGE APP CODE",
+      "language": "javascript"
+    }},
+    {{
+      "path": "frontend/src/components/Header.js",
+      "content": "HEADER COMPONENT",
+      "language": "javascript"
+    }},
+    {{
+      "path": "frontend/src/pages/Home.js",
+      "content": "HOME PAGE",
+      "language": "javascript"
+    }},
+    {{
+      "path": "frontend/src/App.css",
+      "content": "PROFESSIONAL STYLING",
+      "language": "css"
     }}
-  ],
-  "setup_instructions": "string",
-  "deployment_notes": "string"
+  ]
 }}
 
-CRITICAL RULES:
-- NO placeholder functions or TODO comments
-- NO "implement this" messages
-- COMPLETE working application
-- Professional styling included
-- Return ONLY valid JSON, no markdown, no code blocks
+CRITICAL: NO PLACEHOLDERS, NO TODOs, ONLY PRODUCTION-READY CODE"""
 
-Example quality standard - Calculator App should have:
-- Working display showing numbers
-- Functional buttons (0-9, +, -, *, /, =, C)
-- Real calculation logic
-- Nice CSS styling
-- Responsive design"""
+        user_prompt = f"""Build a COMPLETE application for: {prompt}
 
-        user_prompt = f"""Build: {prompt}
+IMPORTANT:
+1. Analyze what this request needs - don't use a generic template
+2. If it's a clone, research the real product's structure
+3. Scale appropriately (simple tools = 1 page, complex sites = multiple pages)
+4. Include ALL dependencies in package.json (especially react-router-dom if using Router!)
+5. Generate unique, specific content (not generic placeholders)
 
-Remember:
-1. Make it IMMEDIATELY runnable - no placeholders
-2. Include REAL logic and functionality
-3. Style it professionally with CSS
-4. Add all necessary dependencies to package.json
-5. Make it look good and work perfectly
+REQUIREMENTS:
+1. Create AT LEAST 5 pages with full navigation
+2. Generate REALISTIC content for each page (not lorem ipsum)
+3. Include working forms, buttons, and interactions
+4. Add beautiful, modern styling
+5. Make it production-ready
 
-Return the JSON structure with complete code now."""
+If it's a website: Include Home (hero + features), About (company story), Products/Services (6+ items), Testimonials, Contact (working form), FAQ
+If it's a web app: Include auth pages, dashboard, main features, settings, user profile
+If it's e-commerce: Product catalog, product details, cart, checkout, user account
+
+Return ONLY valid JSON with complete, working code for all files."""
 
         try:
             logger.info(f"Generating app for prompt: {prompt}")
@@ -217,8 +337,8 @@ Return the JSON structure with complete code now."""
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=0.7,
-                max_tokens=4000
+                temperature=0.8,
+                max_tokens=16000  # Increased for complex multi-page apps
             )
             
             response_text = response.choices[0].message.content.strip()
@@ -239,12 +359,19 @@ Return the JSON structure with complete code now."""
             
             # Ensure package.json exists
             has_package_json = any(f['path'].endswith('package.json') for f in app_structure['files'])
+            has_router = any('react-router' in f.get('content', '').lower() or 'BrowserRouter' in f.get('content', '') 
+                           for f in app_structure['files'])
+            
             if not has_package_json:
                 app_structure['files'].append({
                     "path": "frontend/package.json",
-                    "content": self._generate_package_json(app_structure.get('app_name', 'generated-app')),
+                    "content": self._generate_package_json(app_structure.get('app_name', 'generated-app'), has_router=has_router),
                     "language": "json"
                 })
+            
+            # AUTO-INJECT MISSING DEPENDENCIES (CRITICAL FIX)
+            print("\n🔍 Scanning for missing dependencies...")
+            app_structure['files'] = self._auto_inject_dependencies(app_structure['files'])
             
             # Add deployment configs if not present
             self._add_deployment_configs(app_structure, tech_stack)
