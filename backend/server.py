@@ -429,7 +429,7 @@ async def generate_project_stream(project_data: ProjectCreate, current_user: Use
             
             project_doc = {
                 "project_id": project_id,
-                "user_id": current_user["user_id"],
+                "user_id": current_user.user_id,
                 "name": (project_data.prompt or "AI Project")[:40],
                 "description": project_data.prompt or "",
                 "prompt": project_data.prompt or "",

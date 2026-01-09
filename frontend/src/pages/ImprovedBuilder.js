@@ -383,21 +383,45 @@ const ImprovedBuilder = () => {
     `.trim();
   };
 
-  const downloadProject = () => {
+  const downloadProject = async () => {
     if (!generatedFiles.length) return;
     
-    // Create a simple download of all files
-    generatedFiles.forEach(file => {
-      const blob = new Blob([file.content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
+    try {
+      // Dynamically import JSZip
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      
+      // Add all files to ZIP maintaining directory structure
+      generatedFiles.forEach(file => {
+        zip.file(file.path, file.content || '');
+      });
+      
+      // Generate ZIP file
+      const content = await zip.generateAsync({ type: 'blob' });
+      
+      // Download
+      const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.path.split('/').pop();
+      a.download = `digital-ninja-project-${Date.now()}.zip`;
       a.click();
       URL.revokeObjectURL(url);
-    });
-    
-    toast.success(`Downloaded ${generatedFiles.length} files`);
+      
+      toast.success(`Downloaded ${generatedFiles.length} files as ZIP!`);
+    } catch (error) {
+      console.error('ZIP download error:', error);
+      // Fallback to individual file download
+      generatedFiles.forEach(file => {
+        const blob = new Blob([file.content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.path.split('/').pop();
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+      toast.success(`Downloaded ${generatedFiles.length} files individually`);
+    }
   };
 
   return (
@@ -488,19 +512,30 @@ const ImprovedBuilder = () => {
 
                 {generatedFiles.length > 0 && !generating && (
                   <>
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 grid grid-cols-3 gap-2">
                       <button
                         onClick={() => setShowPreview(!showPreview)}
-                        className="flex-1 h-12 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
+                        className="h-12 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
                       >
-                        {showPreview ? <Code className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        {showPreview ? 'Show Code' : 'Show Preview'}
+                        {showPreview ? <Code className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPreview ? 'Code' : 'Preview'}
+                      </button>
+                      <button
+                        onClick={downloadProject}
+                        className="h-12 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
+                        title="Download as ZIP"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download
                       </button>
                       <button
                         onClick={() => currentProjectId && navigate(`/editor/${currentProjectId}`)}
-                        className="flex-1 h-12 bg-[#9b00e8] hover:bg-[#8800d4] text-white font-semibold rounded-lg transition-all"
+                        className="h-12 bg-[#9b00e8] hover:bg-[#8800d4] text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
                       >
-                        Open in Editor
+                        <FileCode className="w-4 h-4" />
+                        Editor
                       </button>
                     </div>
                     
