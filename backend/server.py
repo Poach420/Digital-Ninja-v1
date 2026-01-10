@@ -38,6 +38,15 @@ except Exception as e:
     logging.error(f"Failed to connect to MongoDB: {e}")
     print(f"MongoDB connection warning: {e}")
 
+# Initialize services
+from version_control_service import VersionControlService
+from file_storage_service import FileStorageService
+from discussion_service import DiscussionService
+
+version_control = VersionControlService(db)
+file_storage = FileStorageService()
+discussion_service = DiscussionService()
+
 # Add MongoDB connection test to FastAPI startup event
 app = FastAPI(title="AI Application Builder")
 api_router = APIRouter(prefix="/api")
@@ -98,6 +107,18 @@ class ProjectCreate(BaseModel):
         "backend": "FastAPI",
         "database": "MongoDB"
     }
+
+class SnapshotCreate(BaseModel):
+    message: Optional[str] = None
+
+class DeployRequest(BaseModel):
+    platform: str = "vercel"  # vercel, render, docker
+    env_vars: Optional[Dict[str, str]] = None
+
+class DiscussionRequest(BaseModel):
+    message: str
+    project_id: Optional[str] = None
+    history: Optional[List[Dict]] = []
 
 class Project(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -656,6 +677,257 @@ async def push_github(req: GitHubPushRequest, current_user: User = Depends(get_c
                 logging.error(f"Error pushing {rel}: {e}")
     return {"message": "Push completed", "files_pushed": pushed, "repo": f"{req.owner}/{req.repo}", "branch": req.branch or "default"}
 
+# ==================== AUTONOMOUS AGENT ENDPOINT ====================
+@api_router.post("/projects/autonomous/stream")
+async def autonomous_agent_stream(project_data: ProjectCreate, current_user: User = Depends(get_current_user)):
+    """
+    Autonomous agent with 200-minute runtime, self-testing, and auto-fixing
+    Like Replit Agent 3
+    """
+    async def event_generator():
+        try:
+            from autonomous_agent import AutonomousAgent
+            
+            agent = AutonomousAgent(
+                project_id=str(uuid.uuid4()),
+                openai_api_key=os.getenv("OPENAI_API_KEY")
+            )
+            
+            # Progress callback
+            async def progress_callback(update):
+                yield f"data: {json.dumps({'type': update['level'], 'message': update['message'], 'timestamp': update['timestamp']})}\n\n"
+            
+            yield f"data: {json.dumps({'type': 'info', 'message': '🤖 Autonomous Agent starting...', 'timestamp': datetime.now().isoformat()})}\n\n"
+            
+            # Run autonomous build
+            result = await agent.run_autonomous_build(
+                prompt=project_data.prompt,
+                progress_callback=lambda update: asyncio.create_task(progress_callback(update)),
+                max_duration_minutes=200
+            )
+            
+            if result["status"] == "success":
+                # Save project
+                now = datetime.now(timezone.utc)
+                project_id = str(uuid.uuid4())
+                
+                project_doc = {
+                    "project_id": project_id,
+                    "user_id": current_user.user_id,
+                    "name": (project_data.prompt or "Autonomous Build")[:40],
+                    "description": project_data.prompt or "",
+                    "prompt": project_data.prompt or "",
+                    "tech_stack": project_data.tech_stack,
+                    "files": result["files"],
+                    "status": "active",
+                    "autonomous_build": True,
+                    "test_results": result.get("test_results", {}),
+                    "fixes_applied": result.get("fixes_applied", []),
+                    "iterations": result.get("iterations", 0),
+                    "duration_minutes": result.get("duration_minutes", 0),
+                    "created_at": now.isoformat(),
+                    "updated_at": now.isoformat()
+                }
+                await db.projects.insert_one(project_doc)
+                
+                yield f"data: {json.dumps({'type': 'complete', 'project_id': project_id, 'files': result['files'], 'test_results': result['test_results']})}\n\n"
+            else:
+                yield f"data: {json.dumps({'type': 'error', 'message': result.get('error', 'Unknown error')})}\n\n"
+                
+        except Exception as e:
+            logger.error(f"Autonomous agent error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+# ==================== VERSION CONTROL ENDPOINTS ====================
+@api_router.post("/projects/{project_id}/snapshots")
+async def create_snapshot(
+    project_id: str,
+    snapshot_data: SnapshotCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a snapshot of current project state"""
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    result = await version_control.create_snapshot(
+        project_id,
+        current_user.user_id,
+        project.get("files", []),
+        snapshot_data.message,
+        auto=False
+    )
+    return result
+
+@api_router.get("/projects/{project_id}/snapshots")
+async def list_snapshots(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """List all snapshots for a project"""
+    snapshots = await version_control.list_snapshots(project_id)
+    return {"snapshots": snapshots}
+
+@api_router.post("/projects/{project_id}/snapshots/{snapshot_id}/restore")
+async def restore_snapshot(
+    project_id: str,
+    snapshot_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Restore project to a specific snapshot"""
+    result = await version_control.restore_snapshot(project_id, snapshot_id, current_user.user_id)
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
+# ==================== DISCUSSION MODE ENDPOINTS ====================
+@api_router.post("/discuss", response_model=ChatResponse)
+async def discussion_mode(
+    request: DiscussionRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Discussion mode - plan without building"""
+    project_context = None
+    if request.project_id:
+        project = await db.projects.find_one({
+            "project_id": request.project_id,
+            "user_id": current_user.user_id
+        })
+        if project:
+            project_context = {
+                "name": project.get("name"),
+                "files": project.get("files", [])
+            }
+    
+    result = await discussion_service.discuss(
+        request.message,
+        project_context,
+        request.history
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    
+    return ChatResponse(response=result["response"])
+
+@api_router.post("/discuss/plan")
+async def generate_implementation_plan(
+    request: DiscussionRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Generate implementation plan for a feature"""
+    result = await discussion_service.generate_implementation_plan(
+        request.message,
+        project_context=None
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    
+    return result
+
+@api_router.post("/discuss/analyze")
+async def analyze_requirements(
+    request: DiscussionRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Analyze requirements and suggest clarifications"""
+    result = await discussion_service.analyze_requirements(
+        request.message,
+        ask_questions=True
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    
+    return result
+
+# ==================== DEPLOYMENT ENDPOINTS ====================
+@api_router.post("/projects/{project_id}/deploy")
+async def deploy_project(
+    project_id: str,
+    deploy_req: DeployRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """One-click deployment to various platforms"""
+    project = await db.projects.find_one({"project_id": project_id, "user_id": current_user.user_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    from deployment_service import DeploymentService
+    deployment = DeploymentService()
+    
+    if deploy_req.platform == "vercel":
+        result = await deployment.deploy_to_vercel(
+            project.get("name"),
+            project.get("files", []),
+            deploy_req.env_vars
+        )
+    elif deploy_req.platform == "docker":
+        result = await deployment.generate_docker_deployment(
+            project.get("files", []),
+            project.get("name")
+        )
+    else:
+        result = await deployment.create_deployment_package(
+            project.get("files", []),
+            project.get("name")
+        )
+    
+    # Save deployment info
+    if result.get("success"):
+        await db.projects.update_one(
+            {"project_id": project_id},
+            {"$set": {
+                "deployment": result,
+                "deployed_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
+    return result
+
+# ==================== FILE STORAGE ENDPOINTS ====================
+@api_router.post("/storage/upload")
+async def upload_file(
+    file: bytes = Body(...),
+    filename: str = Body(...),
+    project_id: Optional[str] = Body(None),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload a file to storage"""
+    result = await file_storage.upload_file(
+        file,
+        filename,
+        current_user.user_id,
+        project_id
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    
+    # Save file reference in database
+    await db.project_files.insert_one(result)
+    
+    return result
+
+@api_router.get("/storage/{file_id}")
+async def get_file_info(file_id: str, current_user: User = Depends(get_current_user)):
+    """Get file information"""
+    file_info = await file_storage.get_file(file_id)
+    if not file_info:
+        raise HTTPException(status_code=404, detail="File not found")
+    return file_info
+
+@api_router.delete("/storage/{file_id}")
+async def delete_file(file_id: str, current_user: User = Depends(get_current_user)):
+    """Delete a file from storage"""
+    result = await file_storage.delete_file(file_id)
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
 # ==================== GENERIC CHAT ENDPOINT ====================
 @api_router.post("/chat/message", response_model=ChatResponse)
 async def chat_message(request: ChatRequest, current_user: User = Depends(get_current_user)):
@@ -684,14 +956,79 @@ async def chat_message(request: ChatRequest, current_user: User = Depends(get_cu
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== ONE-CLICK DEPLOYMENT ====================
+@api_router.post("/projects/{project_id}/deploy")
+async def deploy_project(
+    project_id: str,
+    platform: str = "vercel",
+    current_user: User = Depends(get_current_user)
+):
+    """One-click deployment to Vercel, Netlify, or Railway"""
+    try:
+        # Get project
+        project = await db.projects.find_one(
+            {"project_id": project_id, "user_id": current_user.user_id},
+            {"_id": 0}
+        )
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        from one_click_deploy import OneClickDeployService
+        deploy_service = OneClickDeployService()
+        
+        # Deploy
+        result = await deploy_service.deploy(
+            project_files=project.get("files", []),
+            project_name=project.get("name", "digital-ninja-app"),
+            platform=platform
+        )
+        
+        if result["success"]:
+            # Save deployment info
+            await db.projects.update_one(
+                {"project_id": project_id},
+                {
+                    "$set": {
+                        "deployment": result,
+                        "deployed_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+        
+        return result
+    
+    except Exception as e:
+        logger.error(f"Deployment error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/projects/{project_id}/deployment/status")
+async def get_deployment_status(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Check deployment status"""
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    deployment = project.get("deployment", {})
+    if not deployment:
+        return {"status": "not_deployed"}
+    
+    return deployment
+
 # ==================== HEALTH CHECK & SETUP ====================
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok", "service": "Digital Ninja App Builder", "version": "1.0.0"}
+    return {"status": "ok", "service": "Digital Ninja App Builder", "version": "2.0.0"}
 
 @app.get("/")
 async def root():
-    return {"message": "Digital Ninja App Builder API", "version": "1.0.0", "docs": "/docs"}
+    return {"message": "Digital Ninja App Builder API", "version": "2.0.0", "docs": "/docs"}
 
 app.include_router(api_router)
 

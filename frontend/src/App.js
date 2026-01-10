@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AuthCallback from './pages/AuthCallback';
 import ImprovedBuilder from './pages/ImprovedBuilder';
+import EnhancedBuilder from './pages/EnhancedBuilder';
 import Projects from './pages/Projects';
 import ProjectEditor from './pages/ProjectEditor';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -18,9 +19,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/" element={<Navigate to="/builder" replace />} />
+          <Route path="/" element={<Navigate to="/enhanced-builder" replace />} />
           <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
           <Route path="/builder" element={<ProtectedRoute><ImprovedBuilder /></ProtectedRoute>} />
+          <Route path="/enhanced-builder" element={<ProtectedRoute><EnhancedBuilder /></ProtectedRoute>} />
+          <Route path="/enhanced-builder/:projectId" element={<ProtectedRoute><EnhancedBuilder /></ProtectedRoute>} />
           <Route path="/ai-builder" element={<ProtectedRoute><AiBuilder /></ProtectedRoute>} />
           <Route path="/editor/:projectId" element={<ProtectedRoute><ProjectEditor /></ProtectedRoute>} />
         </Routes>
