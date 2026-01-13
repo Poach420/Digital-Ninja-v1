@@ -1,0 +1,4 @@
+Command: pnpm --filter frontend test -- --watch=false --passWithNoTests (CI=1)
+Result: No tests found, Jest exited with code 0.
+Details: craco test scanned 79 files under src but no __tests__ or *.test.* files exist. Harness configured with --passWithNoTests to acknowledge intentional absence of specs.
+Timestamp: 2026-01-10T01:05:00Z (approx)

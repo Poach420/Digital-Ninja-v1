@@ -3,14 +3,14 @@ import sys
 import os
 from ai_builder_service import AIBuilderService
 
-async def test_generation():
+async def run_generation_demo():
     print("=" * 70)
     print("DIRECT TEST OF AI BUILDER SERVICE")
     print("=" * 70)
     
     ai_service = AIBuilderService()
     
-    prompt = "Build a professional website that promotes natural medicine with product catalog, articles, testimonials, and contact information"
+    prompt = "Build a professional knowledge base for a robotics startup with product docs, tutorials, and a support request form"
     tech_stack = {"framework": "react", "styling": "css"}
     
     print(f"\nPrompt: {prompt}")
@@ -98,4 +98,4 @@ async def test_generation():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    asyncio.run(test_generation())
+    asyncio.run(run_generation_demo())

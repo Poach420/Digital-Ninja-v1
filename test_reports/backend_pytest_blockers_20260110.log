@@ -1,0 +1,5 @@
+Command: .venv/Scripts/python.exe -m pytest
+Result: Interrupted after hanging during collection.
+Reason: test_services.py establishes a MongoClient at import time and waits for a reachable DATABASE_URL. Environment variables (DATABASE_URL, OPENAI_API_KEY, etc.) are not provisioned in the current workspace, causing external service calls to stall. Manual termination issued after no progress.
+Action: Provide test doubles or inject env configuration/mocks before re-running full suite.
+Timestamp: 2026-01-10T00:10:00Z (approx)

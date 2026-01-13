@@ -7,5 +7,14 @@
     "start": "pnpm -C frontend start",
     "build": "pnpm -C frontend build",
     "test": "pnpm -C frontend test"
+  },
+  "pnpm": {
+    "overrides": {
+      "schema-utils": "4.2.0",
+      "babel-loader@8.4.1>schema-utils": "2.7.1"
+    },
+    "patchedDependencies": {
+      "schema-utils@4.2.0": "patches/schema-utils@4.2.0.patch"
+    }
   }
 }

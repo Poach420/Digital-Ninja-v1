@@ -1,0 +1,5 @@
+Command: .venv/Scripts/python.exe -m pytest tests/unit/test_deployment_service_enhanced.py -q
+Output:
+.....                                                                    [100%]
+5 passed in 0.24s
+Timestamp: 2026-01-10T00:00:00Z (approx)

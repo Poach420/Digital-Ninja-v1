@@ -2,7 +2,7 @@ import asyncio
 import requests
 import json
 
-async def test_generation():
+async def run_generation_demo():
     # Login first
     login_response = requests.post(
         'http://127.0.0.1:8000/api/auth/login',
@@ -22,14 +22,14 @@ async def test_generation():
     
     # Generate a project
     print(f"\n🚀 Generating project with UPGRADED prompts...")
-    print(f"Prompt: 'Build a comprehensive website for a natural medicine company'")
+    print(f"Prompt: 'Build an operations dashboard for an electric vehicle fleet'" )
     
     gen_response = requests.post(
         'http://127.0.0.1:8000/api/projects/generate',
         headers={'Authorization': f'Bearer {token}'},
         json={
-            'name': 'TEST - Natural Medicine Website',
-            'description': 'Build a comprehensive website for a natural medicine company with multiple pages, product catalog, testimonials, and contact form',
+            'name': 'TEST - EV Fleet Dashboard',
+            'description': 'Build an operations dashboard for an electric vehicle fleet with maintenance schedules, charging insights, and driver shift planning',
             'tech_stack': {
                 'frontend': 'React',
                 'backend': 'FastAPI',
@@ -104,4 +104,4 @@ async def test_generation():
         print(f"{'='*80}")
 
 if __name__ == '__main__':
-    asyncio.run(test_generation())
+    asyncio.run(run_generation_demo())

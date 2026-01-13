@@ -32,7 +32,7 @@ const ImprovedBuilder = () => {
   const simulateProgress = (files) => {
     addLog('🚀 Starting AI-powered generation with GPT-4o...', 'info');
     addLog('📊 Analyzing your requirements...', 'info');
-    
+
     setTimeout(() => {
       addLog('🏗️ Building project structure...', 'info');
     }, 500);
@@ -64,10 +64,10 @@ const ImprovedBuilder = () => {
   // Chat with AI about the project (no rebuild)
   const handleChat = async () => {
     if (!chatMessage.trim()) return;
-    
+
     setGenerating(true);
     addLog(`💬 You: ${chatMessage}`, 'info');
-    
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${BACKEND_URL}/api/chat/message`, {
@@ -84,17 +84,17 @@ const ImprovedBuilder = () => {
           } : null
         })
       });
-      
+
       const data = await response.json();
       if (data.response) {
         // Display AI response
         const aiResponse = data.response;
         addLog(`🤖 AI: ${aiResponse}`, 'success');
-        
+
         // Update summary with chat response
         setAiSummary(prev => prev + `\n\n**Q:** ${chatMessage}\n**A:** ${aiResponse}`);
       }
-      
+
       setChatMessage('');
     } catch (error) {
       console.error('Chat error:', error);
@@ -146,12 +146,12 @@ const ImprovedBuilder = () => {
 
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
-        
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.type === 'status') {
                 addLog(data.message, 'info');
               } else if (data.type === 'file') {
@@ -163,12 +163,12 @@ const ImprovedBuilder = () => {
                 setGeneratedFiles(data.files);
                 allFiles = data.files;
                 addLog('🎉 Project generated successfully!', 'success');
-                
+
                 // Generate AI summary
                 const pageCount = data.files.filter(f => f.path.includes('pages/') || f.path.includes('Pages/')).length;
                 const componentCount = data.files.filter(f => f.path.includes('components/') || f.path.includes('Components/')).length;
                 const hasCSS = data.files.some(f => f.path.includes('.css'));
-                
+
                 const summary = `🎉 **Build Complete!**\n\n` +
                   `I've created a professional ${pageCount}-page application with:\n` +
                   `• ${data.files.length} total files (${componentCount} reusable components)\n` +
@@ -182,7 +182,7 @@ const ImprovedBuilder = () => {
                   `• Preview on the right shows simplified version\n` +
                   `• Use "Continue working" below to add features/fix issues\n` +
                   `• Click "My Projects" to access full editor and deployment`;
-                
+
                 setAiSummary(summary);
               } else if (data.type === 'error') {
                 addLog(`❌ Error: ${data.message}`, 'error');
@@ -198,10 +198,10 @@ const ImprovedBuilder = () => {
       if (allFiles.length > 0) {
         setCurrentProjectId(projectId);
         const appFile = allFiles.find(f => f.path.includes('App.js') || f.path.includes('App.jsx'));
-        
+
         // Check if this is a multi-page app with React Router
         const hasRouter = appFile?.content.includes('react-router') || appFile?.content.includes('BrowserRouter');
-        
+
         if (hasRouter) {
           // Multi-page apps can't preview properly in iframe
           console.log('Multi-page app detected (uses React Router) - showing info instead');
@@ -225,7 +225,7 @@ const ImprovedBuilder = () => {
 
       setGenerating(false);
       toast.success(`Project generated with ${allFiles.length} files!`);
-      
+
     } catch (error) {
       console.error('Generation error:', error);
       addLog(`❌ Error: ${error.message || 'Failed to generate project'}`, 'error');
@@ -238,7 +238,7 @@ const ImprovedBuilder = () => {
     // For multi-page apps with Router, show info instead of broken preview
     const pages = files.filter(f => f.path.includes('pages/') || f.path.includes('Pages/'));
     const components = files.filter(f => f.path.includes('components/') || f.path.includes('Components/'));
-    
+
     return `
 <!DOCTYPE html>
 <html>
@@ -385,20 +385,20 @@ const ImprovedBuilder = () => {
 
   const downloadProject = async () => {
     if (!generatedFiles.length) return;
-    
+
     try {
       // Dynamically import JSZip
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
-      
+
       // Add all files to ZIP maintaining directory structure
       generatedFiles.forEach(file => {
         zip.file(file.path, file.content || '');
       });
-      
+
       // Generate ZIP file
       const content = await zip.generateAsync({ type: 'blob' });
-      
+
       // Download
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
@@ -406,7 +406,7 @@ const ImprovedBuilder = () => {
       a.download = `digital-ninja-project-${Date.now()}.zip`;
       a.click();
       URL.revokeObjectURL(url);
-      
+
       toast.success(`Downloaded ${generatedFiles.length} files as ZIP!`);
     } catch (error) {
       console.error('ZIP download error:', error);
@@ -428,8 +428,8 @@ const ImprovedBuilder = () => {
     <div className="min-h-screen relative overflow-hidden">
       {/* FULL SCREEN Logo Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <img 
-          src="/digital-ninja-logo.png" 
+        <img
+          src="/digital-ninja-logo.png"
           alt=""
           className="w-full h-full object-cover opacity-15"
           style={{ filter: 'brightness(0.8)' }}
@@ -491,7 +491,7 @@ const ImprovedBuilder = () => {
                   className="w-full h-40 px-4 py-3 bg-gray-800/80 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-[#00ff41] focus:ring-2 focus:ring-[#00ff41]/50 resize-none"
                   disabled={generating}
                 />
-                
+
                 <button
                   onClick={handleBuild}
                   disabled={generating || !prompt.trim()}
@@ -538,7 +538,7 @@ const ImprovedBuilder = () => {
                         Editor
                       </button>
                     </div>
-                    
+
                     {/* AI Summary */}
                     {aiSummary && (
                       <div className="mt-4 p-6 bg-gradient-to-br from-[#1e3a8a]/40 to-[#312e81]/40 rounded-lg border border-[#00ff41]/30">
@@ -551,7 +551,7 @@ const ImprovedBuilder = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Continue Working Chat */}
                     <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                       <div className="flex items-center justify-between mb-3">
@@ -573,12 +573,12 @@ const ImprovedBuilder = () => {
                           </button>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2">
                         <textarea
                           value={chatMode ? chatMessage : prompt}
                           onChange={(e) => chatMode ? setChatMessage(e.target.value) : setPrompt(e.target.value)}
-                          placeholder={chatMode 
+                          placeholder={chatMode
                             ? "Ask questions: 'What features should I add?' 'How can I improve this?' 'What's missing?'"
                             : "Request changes: 'Add a contact page' 'Change colors to blue' 'Fix the preview'"}
                           className="flex-1 h-20 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-[#9b00e8] focus:ring-2 focus:ring-[#9b00e8]/50 resize-none text-sm"
@@ -587,16 +587,16 @@ const ImprovedBuilder = () => {
                         <button
                           onClick={() => chatMode ? handleChat() : handleBuild()}
                           disabled={generating || (chatMode ? !chatMessage.trim() : !prompt.trim())}
-                          className={`h-20 px-6 ${chatMode 
-                            ? 'bg-gradient-to-r from-[#00ff41] to-[#00d4ff]' 
+                          className={`h-20 px-6 ${chatMode
+                            ? 'bg-gradient-to-r from-[#00ff41] to-[#00d4ff]'
                             : 'bg-gradient-to-r from-[#9b00e8] to-[#ff4500]'} hover:opacity-90 text-${chatMode ? 'black' : 'white'} font-semibold rounded-lg disabled:opacity-50 transition-all`}
                         >
                           {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : (chatMode ? '💭 Chat' : '🔨 Rebuild')}
                         </button>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        {chatMode 
-                          ? "💡 Brainstorm mode: Ask questions and get suggestions without rebuilding" 
+                        {chatMode
+                          ? "💡 Brainstorm mode: Ask questions and get suggestions without rebuilding"
                           : "🔨 Rebuild mode: Will regenerate all files based on your request"}
                       </p>
                     </div>
@@ -615,17 +615,16 @@ const ImprovedBuilder = () => {
                     {progressLog.map((log, idx) => (
                       <div
                         key={idx}
-                        className={`flex items-start gap-3 p-3 rounded-lg text-sm ${
-                          log.type === 'error' ? 'bg-red-900/20 text-red-300' :
-                          log.type === 'success' ? 'bg-green-900/20 text-green-300' :
-                          log.type === 'file' ? 'bg-blue-900/20 text-blue-300' :
-                          'bg-gray-800/50 text-gray-300'
-                        }`}
+                        className={`flex items-start gap-3 p-3 rounded-lg text-sm ${log.type === 'error' ? 'bg-red-900/20 text-red-300' :
+                            log.type === 'success' ? 'bg-green-900/20 text-green-300' :
+                              log.type === 'file' ? 'bg-blue-900/20 text-blue-300' :
+                                'bg-gray-800/50 text-gray-300'
+                          }`}
                       >
                         {log.type === 'success' ? <CheckCircle className="w-4 h-4 mt-0.5" /> :
-                         log.type === 'error' ? <AlertCircle className="w-4 h-4 mt-0.5" /> :
-                         log.type === 'file' ? <FileCode className="w-4 h-4 mt-0.5" /> :
-                         <div className="w-2 h-2 mt-1.5 rounded-full bg-[#00ff41] animate-pulse"></div>
+                          log.type === 'error' ? <AlertCircle className="w-4 h-4 mt-0.5" /> :
+                            log.type === 'file' ? <FileCode className="w-4 h-4 mt-0.5" /> :
+                              <div className="w-2 h-2 mt-1.5 rounded-full bg-[#00ff41] animate-pulse"></div>
                         }
                         <div className="flex-1">
                           <p>{log.message}</p>
@@ -699,28 +698,16 @@ const ImprovedBuilder = () => {
             </div>
           </div>
 
-          {/* Examples */}
+          {/* Prompt guidance */}
           <div className="mt-8 bg-gray-900/40 backdrop-blur-lg border border-gray-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-200 mb-4">Try these examples:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                "Build a professional restaurant website with menu, gallery, and reservations",
-                "Create an e-commerce store for gym supplements with product catalog and cart",
-                "Build a natural medicine website with articles, testimonials, and contact form",
-                "Create a portfolio website for a photographer with image galleries",
-                "Build a SaaS landing page with pricing tiers and feature comparison",
-                "Create a blog platform with article listings and reading experience"
-              ].map((example, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setPrompt(example)}
-                  className="text-left p-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700 hover:border-[#00ff41]/50 rounded-lg transition-all text-sm text-gray-300 hover:text-white"
-                  disabled={generating}
-                >
-                  💡 {example}
-                </button>
-              ))}
-            </div>
+            <h3 className="text-lg font-semibold text-gray-200 mb-4">Tips for powerful prompts:</h3>
+            <ul className="list-disc list-inside space-y-2 text-sm text-gray-300">
+              <li>Describe the product or experience you want, not a template you expect.</li>
+              <li>Mention the critical workflows or data flows it must support.</li>
+              <li>Call out integrations, APIs, or design inspirations if they matter.</li>
+              <li>State any guardrails (compliance, tone, accessibility, devices).</li>
+              <li>Ask follow-up questions to iterate—each run should feel original.</li>
+            </ul>
           </div>
         </div>
       </div>

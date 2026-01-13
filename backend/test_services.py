@@ -22,7 +22,7 @@ db = client['digital_ninja_app']  # Replace 'digital_ninja_app' with the correct
 
 # MongoDB Test Endpoint
 @app.get("/db-test")
-async def test_mongo():
+async def db_test():
     try:
         collections = db.list_collection_names()
         return {"status": "success", "collections": collections}
@@ -31,7 +31,7 @@ async def test_mongo():
 
 # Google API Key Integration
 @app.get("/google-api-test")
-async def test_google_api():
+async def google_api_test():
     try:
         import requests
         response = requests.get(
@@ -43,7 +43,7 @@ async def test_google_api():
 
 # GitHub API Key Integration
 @app.get("/github-api-test")
-async def test_github_api():
+async def github_api_test():
     try:
         import requests
         headers = {"Authorization": f"token {GITHUB_API_KEY}"}

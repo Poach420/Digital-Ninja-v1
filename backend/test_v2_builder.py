@@ -6,7 +6,7 @@ import asyncio
 import logging
 logging.basicConfig(level=logging.INFO)
 
-async def test_v2_builder():
+async def run_v2_builder_demo():
     print("=" * 60)
     print("🧪 Testing AI Builder V2 (Enhanced)")
     print("=" * 60)
@@ -62,4 +62,4 @@ async def test_v2_builder():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    asyncio.run(test_v2_builder())
+    asyncio.run(run_v2_builder_demo())

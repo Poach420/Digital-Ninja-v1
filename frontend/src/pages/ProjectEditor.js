@@ -9,6 +9,7 @@ import { Save, Download, Trash2, FolderTree, Code2, Home, Rocket, Eye, EyeOff, G
 import { isDevAuthEnabled } from '../utils/devAuth';
 import AIChat from '../components/AIChat';
 import BrandLogo from '../components/BrandLogo';
+import DeploymentConsole from '../components/DeploymentConsole';
 
 const ProjectEditor = () => {
   const { projectId } = useParams();
@@ -17,10 +18,10 @@ const ProjectEditor = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState('');
   const [saving, setSaving] = useState(false);
-  const [deploying, setDeploying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [deployConsoleOpen, setDeployConsoleOpen] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -114,24 +115,17 @@ const ProjectEditor = () => {
     }
   };
 
-  const handleDeploy = async () => {
-    setDeploying(true);
-    try {
-      const response = await api.post(`/deployments/deploy`, {
-        project_id: projectId,
-        tier: 'free'
-      });
-      if (response.data.status === 'deployed') {
-        toast.success(`Deployed to ${response.data.urls.app}`);
-        window.open(response.data.urls.app, '_blank');
-      } else {
-        toast.error('Deployment failed');
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Deployment failed');
-    } finally {
-      setDeploying(false);
-    }
+  const handleDeploymentComplete = (deploymentResult) => {
+    toast.success(deploymentResult?.url ? `Deployed to ${deploymentResult.url}` : 'Deployment completed');
+    setProject((prev) => (
+      prev
+        ? {
+          ...prev,
+          deployment: deploymentResult,
+          deployed_at: new Date().toISOString(),
+        }
+        : prev
+    ));
   };
 
   const handleExport = async () => {
@@ -153,7 +147,7 @@ const ProjectEditor = () => {
     try {
       toast.loading('Preparing clean export...');
       const response = await api.post(`/projects/${projectId}/export/github`);
-      
+
       // Create a download of the clean project structure
       const exportData = {
         name: response.data.project_name,
@@ -162,21 +156,21 @@ const ProjectEditor = () => {
         deployment_ready: true,
         instructions: "All files are clean and deployment-ready. No Emergent dependencies included."
       };
-      
+
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${response.data.project_name}-github-ready.json`;
       a.click();
-      
+
       toast.success('✅ Clean code exported! Ready for GitHub push');
       toast.info('📦 Files include: vercel.json, .env.example, .gitignore');
     } catch (error) {
       toast.error('GitHub export failed');
     }
   };
-  
+
 
   const handleDelete = async () => {
     if (!confirm('Delete this project?')) return;
@@ -233,8 +227,8 @@ const ProjectEditor = () => {
           <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="text-white border-slate-600" data-testid="save-button">
             <Save className="h-4 w-4 mr-2" />{saving ? 'Saving...' : 'Save'}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDeploy} disabled={deploying} className="text-white border-slate-600 bg-[#ff4500] hover:bg-[#ff5722]" data-testid="deploy-button">
-            <Rocket className="h-4 w-4 mr-2" />{deploying ? 'Deploying...' : 'Deploy'}
+          <Button variant="outline" size="sm" onClick={() => setDeployConsoleOpen(true)} className="text-white border-slate-600 bg-[#ff4500] hover:bg-[#ff5722]" data-testid="deploy-button">
+            <Rocket className="h-4 w-4 mr-2" />Deploy
           </Button>
           <Button variant="outline" size="sm" onClick={handleGitHubExport} className="text-white border-slate-600 bg-[#ff4500] hover:bg-[#ff5722]" data-testid="github-export-button">
             <Github className="h-4 w-4 mr-2" />Export to GitHub
@@ -283,6 +277,13 @@ const ProjectEditor = () => {
           )}
         </div>
       </div>
+      <DeploymentConsole
+        open={deployConsoleOpen}
+        onOpenChange={setDeployConsoleOpen}
+        projectId={projectId}
+        projectName={project?.name}
+        onComplete={handleDeploymentComplete}
+      />
     </div>
   );
 };

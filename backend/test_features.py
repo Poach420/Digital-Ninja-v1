@@ -11,7 +11,7 @@ BACKEND_URL = "http://localhost:8000"
 TEST_USER_EMAIL = "test@digitalninja.com"
 TEST_USER_PASSWORD = "TestPassword123!"
 
-async def test_health_check():
+async def health_check():
     """Test backend health"""
     print("\n🔍 Testing Health Check...")
     async with httpx.AsyncClient() as client:
@@ -24,7 +24,7 @@ async def test_health_check():
             print(f"❌ Health check failed: {response.status_code}")
             return False
 
-async def test_registration_login():
+async def login_and_get_token():
     """Test user registration and login"""
     print("\n🔍 Testing Registration & Login...")
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -59,7 +59,7 @@ async def test_registration_login():
             print(f"❌ Login failed: {login_response.status_code}")
             return None
 
-async def test_autonomous_agent(token: str):
+async def autonomous_agent_run(token: str):
     """Test autonomous agent generation"""
     print("\n🔍 Testing Autonomous Agent...")
     print("   This will take 30-60 seconds...")
@@ -115,7 +115,7 @@ async def test_autonomous_agent(token: str):
         
         return None
 
-async def test_regular_generation(token: str):
+async def regular_generation(token: str):
     """Test regular project generation"""
     print("\n🔍 Testing Regular Generation...")
     
@@ -161,7 +161,7 @@ async def test_regular_generation(token: str):
         
         return None
 
-async def test_deployment(token: str, project_id: str):
+async def deploy_project(token: str, project_id: str):
     """Test deployment endpoint"""
     print(f"\n🔍 Testing Deployment for project {project_id}...")
     
@@ -201,7 +201,7 @@ async def run_all_tests():
     }
     
     # Test 1: Health check
-    if await test_health_check():
+    if await health_check():
         results["tests_passed"] += 1
     else:
         results["tests_failed"] += 1
@@ -209,7 +209,7 @@ async def run_all_tests():
         return results
     
     # Test 2: Auth
-    token = await test_registration_login()
+    token = await login_and_get_token()
     if token:
         results["tests_passed"] += 1
     else:
@@ -218,12 +218,12 @@ async def run_all_tests():
         return results
     
     # Test 3: Regular generation
-    project_id = await test_regular_generation(token)
+    project_id = await regular_generation(token)
     if project_id:
         results["tests_passed"] += 1
         
         # Test 4: Deployment (if project created)
-        await test_deployment(token, project_id)
+        await deploy_project(token, project_id)
     else:
         results["tests_failed"] += 1
     

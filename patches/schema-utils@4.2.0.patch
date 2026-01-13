@@ -1,0 +1,13 @@
+diff --git a/dist/index.js b/dist/index.js
+index 4574912d5ca0c9038af25e472f696766dd0e4392..0fcc3f5c4c0890d6e88abe65b8fb04ecc385d077 100644
+--- a/dist/index.js
++++ b/dist/index.js	
+@@ -12,5 +12,7 @@ module.exports = {
+   ValidationError,
+   enableValidation,
+   disableValidation,
+-  needValidate
++  needValidate,
++  validateOptions: validate
+ };
++module.exports.default = module.exports;

@@ -5,13 +5,14 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import {
     Rocket, MessageCircle, History, Paintbrush, Upload, Save,
-    Code2, Eye, Sparkles, Clock, CheckCircle2, AlertCircle
+    Code2, Eye, Sparkles, Clock, CheckCircle2, AlertCircle, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api, { BACKEND_URL } from '../utils/api';
 import LivePreview from '../components/LivePreview';
 import VisualEditor from '../components/VisualEditor';
 import DashboardLayout from '../components/DashboardLayout';
+import DeploymentConsole from '../components/DeploymentConsole';
 
 /**
  * Enhanced Builder - All Replit/Emergent-level features
@@ -34,6 +35,7 @@ const EnhancedBuilder = () => {
     const [snapshots, setSnapshots] = useState([]);
     const [discussionHistory, setDiscussionHistory] = useState([]);
     const [activeTab, setActiveTab] = useState('preview');
+    const [showDeploymentConsole, setShowDeploymentConsole] = useState(false);
 
     useEffect(() => {
         if (projectId) {
@@ -183,28 +185,17 @@ const EnhancedBuilder = () => {
         }
     };
 
-    const deployProject = async () => {
+    const openDeploymentConsole = () => {
         if (!projectId) {
-            toast.error('No project to deploy');
+            toast.error('Generate or select a project before deploying');
             return;
         }
+        setShowDeploymentConsole(true);
+    };
 
-        try {
-            toast.info('Starting deployment...');
-
-            const response = await api.post(`/projects/${projectId}/deploy`, {
-                platform: 'vercel',
-                env_vars: {}
-            });
-
-            if (response.data.success) {
-                toast.success(`Deployed to ${response.data.url}`);
-            } else {
-                toast.error('Deployment failed: ' + response.data.error);
-            }
-        } catch (error) {
-            toast.error('Deployment error: ' + error.message);
-        }
+    const handleDeploymentComplete = (deploymentResult) => {
+        toast.success(deploymentResult?.url ? `Deployed to ${deploymentResult.url}` : 'Deployment completed');
+        setProject((prev) => (prev ? { ...prev, deployment: deploymentResult } : prev));
     };
 
     return (
@@ -243,7 +234,7 @@ const EnhancedBuilder = () => {
                                         Save Snapshot
                                     </Button>
                                     <Button
-                                        onClick={deployProject}
+                                        onClick={openDeploymentConsole}
                                         className="bg-green-600 hover:bg-green-700"
                                     >
                                         <Upload className="h-4 w-4 mr-2" />
@@ -370,8 +361,8 @@ const EnhancedBuilder = () => {
                                                 {discussionHistory.map((msg, idx) => (
                                                     <div key={idx} className={`${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
                                                         <div className={`inline-block max-w-[80%] p-3 rounded-lg ${msg.role === 'user'
-                                                                ? 'bg-orange-500 text-white'
-                                                                : 'bg-slate-700 text-slate-100'
+                                                            ? 'bg-orange-500 text-white'
+                                                            : 'bg-slate-700 text-slate-100'
                                                             }`}>
                                                             {msg.content}
                                                         </div>
@@ -489,6 +480,13 @@ const EnhancedBuilder = () => {
                         </Card>
                     </div>
                 </div>
+                <DeploymentConsole
+                    open={showDeploymentConsole}
+                    onOpenChange={setShowDeploymentConsole}
+                    projectId={projectId}
+                    projectName={project?.name}
+                    onComplete={handleDeploymentComplete}
+                />
             </div>
         </DashboardLayout>
     );

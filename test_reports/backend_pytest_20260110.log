@@ -1,0 +1,248 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd
+plugins: anyio-4.12.1
+collected 12 items
+
+backend\PROOF_TEST.py F                                                  [  8%]
+backend\test_ai_direct.py F                                              [ 16%]
+backend\test_features.py FFEEE                                           [ 58%]
+backend\test_new_generation.py F                                         [ 66%]
+backend\test_services.py FFF                                             [ 91%]
+backend\test_v2_builder.py F                                             [100%]
+
+=================================== ERRORS ====================================
+___________________ ERROR at setup of test_autonomous_agent ___________________
+file C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd\backend\test_features.py, line 62
+  async def test_autonomous_agent(token: str):
+      """Test autonomous agent generation"""
+      print("\\n\U0001f50d Testing Autonomous Agent...")
+      print("   This will take 30-60 seconds...")
+
+      async with httpx.AsyncClient(timeout=120.0) as client:
+          headers = {"Authorization": f"Bearer {token}"}
+          project_data = {
+              "prompt": "Create a simple todo list app with React",
+              "tech_stack": {
+                  "frontend": "React",
+                  "backend": "FastAPI",
+                  "database": "MongoDB"
+              }
+          }
+
+          try:
+              response = await client.post(
+                  f"{BACKEND_URL}/api/projects/autonomous/stream",
+                  json=project_data,
+                  headers=headers
+              )
+
+              print(f"   Response status: {response.status_code}")
+
+              if response.status_code == 200:
+                  # Read streaming response
+                  events = 0
+                  async for line in response.aiter_lines():
+                      if line.startswith("data: "):
+                          try:
+                              data = json.loads(line[6:])
+                              events += 1
+                              if data.get("type") == "complete":
+                                  print(f"\u2705 Autonomous agent completed!")
+                                  print(f"   Files generated: {len(data.get('files', []))}")
+                                  return data.get("project_id")
+                              elif data.get("type") == "error":
+                                  print(f"\u274c Error: {data.get('message')}")
+                                  return None
+                          except json.JSONDecodeError:
+                              pass
+
+                  if events > 0:
+                      print(f"   Received {events} events")
+                  else:
+                      print("\u26a0\ufe0f No events received")
+              else:
+                  print(f"\u274c Autonomous agent failed: {response.status_code}")
+                  print(f"   Response: {response.text[:200]}")
+
+          except Exception as e:
+              print(f"\u274c Exception during autonomous agent test: {e}")
+
+          return None
+E       fixture 'token' not found
+>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd\backend\test_features.py:62
+__________________ ERROR at setup of test_regular_generation __________________
+file C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd\backend\test_features.py, line 118
+  async def test_regular_generation(token: str):
+      """Test regular project generation"""
+      print("\\n\U0001f50d Testing Regular Generation...")
+
+      async with httpx.AsyncClient(timeout=60.0) as client:
+          headers = {"Authorization": f"Bearer {token}"}
+          project_data = {
+              "prompt": "Create a weather app with React",
+              "tech_stack": {
+                  "frontend": "React",
+                  "backend": "FastAPI",
+                  "database": "MongoDB"
+              }
+          }
+
+          try:
+              response = await client.post(
+                  f"{BACKEND_URL}/api/projects/generate/stream",
+                  json=project_data,
+                  headers=headers
+              )
+
+              if response.status_code == 200:
+                  project_id = None
+                  async for line in response.aiter_lines():
+                      if line.startswith("data: "):
+                          try:
+                              data = json.loads(line[6:])
+                              if data.get("type") == "complete":
+                                  project_id = data.get("project_id")
+                                  print(f"\u2705 Regular generation completed!")
+                                  print(f"   Project ID: {project_id}")
+                                  print(f"   Files: {len(data.get('files', []))}")
+                                  break
+                          except:
+                              pass
+
+                  return project_id
+              else:
+                  print(f"\u274c Regular generation failed: {response.status_code}")
+
+          except Exception as e:
+              print(f"\u274c Exception: {e}")
+
+          return None
+E       fixture 'token' not found
+>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd\backend\test_features.py:118
+______________________ ERROR at setup of test_deployment ______________________
+file C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd\backend\test_features.py, line 164
+  async def test_deployment(token: str, project_id: str):
+      """Test deployment endpoint"""
+      print(f"\\n\U0001f50d Testing Deployment for project {project_id}...")
+
+      async with httpx.AsyncClient(timeout=120.0) as client:
+          headers = {"Authorization": f"Bearer {token}"}
+
+          try:
+              response = await client.post(
+                  f"{BACKEND_URL}/api/projects/{project_id}/deploy?platform=vercel",
+                  headers=headers
+              )
+
+              if response.status_code == 200:
+                  data = response.json()
+                  if data.get("success"):
+                      print(f"\u2705 Deployment successful!")
+                      print(f"   URL: {data.get('url')}")
+                  else:
+                      print(f"\u26a0\ufe0f Deployment configured but not active: {data.get('error')}")
+              else:
+                  print(f"\u26a0\ufe0f Deployment endpoint exists but needs configuration")
+                  print(f"   Status: {response.status_code}")
+
+          except Exception as e:
+              print(f"\u26a0\ufe0f Deployment test: {e}")
+E       fixture 'token' not found
+>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+C:\Users\Administrator\dyad-apps\Digital NInja v,1 Poach Powerd\backend\test_features.py:164
+================================== FAILURES ===================================
+____________________________ test_real_generation _____________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_generation _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______________________________ test_health_check ______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+___________________________ test_registration_login ___________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_generation _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________________________________ test_mongo __________________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_google_api _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_github_api _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________________________ test_v2_builder _______________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+=========================== short test summary info ===========================
+FAILED backend/PROOF_TEST.py::test_real_generation - Failed: async def functi...
+FAILED backend/test_ai_direct.py::test_generation - Failed: async def functio...
+FAILED backend/test_features.py::test_health_check - Failed: async def functi...
+FAILED backend/test_features.py::test_registration_login - Failed: async def ...
+FAILED backend/test_new_generation.py::test_generation - Failed: async def fu...
+FAILED backend/test_services.py::test_mongo - Failed: async def functions are...
+FAILED backend/test_services.py::test_google_api - Failed: async def function...
+FAILED backend/test_services.py::test_github_api - Failed: async def function...
+FAILED backend/test_v2_builder.py::test_v2_builder - Failed: async def functi...
+ERROR backend/test_features.py::test_autonomous_agent
+ERROR backend/test_features.py::test_regular_generation
+ERROR backend/test_features.py::test_deployment
+========================= 9 failed, 3 errors in 5.41s =========================

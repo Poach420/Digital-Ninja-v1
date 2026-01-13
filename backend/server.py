@@ -15,6 +15,7 @@ import os
 import uuid
 import logging
 from pathlib import Path
+import contextlib
 import base64
 import httpx
 import re
@@ -84,6 +85,9 @@ class User(BaseModel):
     email: str
     name: str
     created_at: datetime
+    team_id: Optional[str] = None
+    role: str = "member"
+    plan: str = "free"
     picture: Optional[str] = ""
 
 class UserCreate(BaseModel):
@@ -152,12 +156,140 @@ class ChatBuildResponse(BaseModel):
     response: str
     file_updates: List[FileUpdate] = []
 
+class Team(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    team_id: str
+    name: str
+    owner_id: str
+    plan: str = "free"
+    created_at: datetime
+    billing_status: str = "active"
+
+class TeamMember(BaseModel):
+    user_id: str
+    email: EmailStr
+    name: str
+    role: str
+    picture: Optional[str] = None
+
+class TeamInvite(BaseModel):
+    email: EmailStr
+    role: str = "viewer"
+
+class BillingPlan(BaseModel):
+    plan_id: str
+    name: str
+    price_zar: float
+    features: List[str]
+    max_pages: int
+
+class BillingUsage(BaseModel):
+    projects: int = 0
+    deployments: int = 0
+    credits_used: int = 0
+
+class PaymentMethod(BaseModel):
+    provider: str
+    status: str
+    currency: str = "ZAR"
+    last4: Optional[str] = None
+
+class SecretItem(BaseModel):
+    key: str
+    value: str
+    scope: str = "team"
+    updated_at: datetime
+
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    picture: Optional[str] = None
+
+class PasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str
+
 # ==================== AUTH HELPERS ====================
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 JWT_SECRET = os.getenv("JWT_SECRET", "your-jwt-secret-key")
 JWT_ALGORITHM = "HS256"
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+DEFAULT_PLAN = "free"
+TEAM_OWNER_ROLE = "owner"
+BILLING_ALLOWED_ROLES = {"owner", "admin"}
+TEAM_ROLES_ALLOWED = {"owner", "admin", "editor", "viewer"}
+BILLING_PLANS = [
+    BillingPlan(
+        plan_id="free",
+        name="Free",
+        price_zar=0.0,
+        features=["3 pages", "Basic support", "1 team member"],
+        max_pages=3,
+    ),
+    BillingPlan(
+        plan_id="pro",
+        name="Pro",
+        price_zar=299.0,
+        features=["50 pages", "Priority support", "5 team members", "Custom domain"],
+        max_pages=50,
+    ),
+    BillingPlan(
+        plan_id="business",
+        name="Business",
+        price_zar=999.0,
+        features=["Unlimited pages", "24/7 support", "Unlimited team members", "White label"],
+        max_pages=999999,
+    ),
+]
+BILLING_PLAN_MAP = {plan.plan_id: plan for plan in BILLING_PLANS}
+
+def parse_datetime_field(document: Dict[str, Any], field: str) -> None:
+    value = document.get(field)
+    if isinstance(value, str):
+        document[field] = datetime.fromisoformat(value)
+
+async def ensure_team_for_user(user_doc: Dict[str, Any]) -> Dict[str, Any]:
+    if user_doc.get("team_id"):
+        team_doc = await db.teams.find_one({"team_id": user_doc["team_id"]}, {"_id": 0})
+        if team_doc:
+            parse_datetime_field(team_doc, "created_at")
+            plan_code = team_doc.get("plan", DEFAULT_PLAN)
+            if user_doc.get("plan") != plan_code:
+                await db.users.update_one({"user_id": user_doc["user_id"]}, {"$set": {"plan": plan_code}})
+                user_doc["plan"] = plan_code
+            return user_doc
+    team_id = f"team_{uuid.uuid4().hex[:12]}"
+    team_name = user_doc.get("name") or "Digital Ninja Team"
+    created_at = datetime.now(timezone.utc)
+    team_payload = {
+        "team_id": team_id,
+        "name": f"{team_name}'s Team" if not team_name.endswith(" Team") else team_name,
+        "owner_id": user_doc["user_id"],
+        "plan": DEFAULT_PLAN,
+        "billing_status": "active",
+        "created_at": created_at.isoformat(),
+        "usage": {"projects": 0, "deployments": 0, "credits_used": 0},
+    }
+    await db.teams.insert_one(team_payload)
+    await db.users.update_one(
+        {"user_id": user_doc["user_id"]},
+        {"$set": {"team_id": team_id, "role": TEAM_OWNER_ROLE, "plan": DEFAULT_PLAN}},
+    )
+    user_doc["team_id"] = team_id
+    user_doc["role"] = TEAM_OWNER_ROLE
+    user_doc["plan"] = DEFAULT_PLAN
+    return user_doc
+
+async def load_user_document(user_id: str) -> Optional[Dict[str, Any]]:
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user_doc:
+        return None
+    user_doc = dict(user_doc)
+    parse_datetime_field(user_doc, "created_at")
+    await ensure_team_for_user(user_doc)
+    user_doc.pop("password_hash", None)
+    return user_doc
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -185,12 +317,10 @@ async def get_current_user(request: Request) -> User:
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
-    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    user_doc = await load_user_document(user_id)
     if not user_doc:
         raise HTTPException(status_code=404, detail="User not found")
-    if isinstance(user_doc.get("created_at"), str):
-        user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
-    return User(**{k: v for k, v in user_doc.items() if k != "password_hash"})
+    return User(**user_doc)
 
 # ==================== AUTH ENDPOINTS ====================
 @api_router.post("/auth/register", response_model=TokenResponse)
@@ -199,18 +329,35 @@ async def register(user_data: UserCreate):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     user_id = f"user_{uuid.uuid4().hex[:12]}"
-    user = User(
-        user_id=user_id,
-        email=user_data.email,
-        name=user_data.name,
-        created_at=datetime.now(timezone.utc)
-    )
-    user_dict = user.model_dump()
-    user_dict["password_hash"] = hash_password(user_data.password)
-    user_dict["created_at"] = user_dict["created_at"].isoformat()
-    await db.users.insert_one(user_dict)
-    access_token = create_access_token(data={"user_id": user.user_id})
-    return TokenResponse(access_token=access_token, user=user)
+    created_at = datetime.now(timezone.utc)
+    team_id = f"team_{uuid.uuid4().hex[:12]}"
+    team_payload = {
+        "team_id": team_id,
+        "name": f"{user_data.name}'s Team" if user_data.name else "Digital Ninja Team",
+        "owner_id": user_id,
+        "plan": DEFAULT_PLAN,
+        "billing_status": "active",
+        "created_at": created_at.isoformat(),
+        "usage": {"projects": 0, "deployments": 0, "credits_used": 0},
+    }
+    user_payload = {
+        "user_id": user_id,
+        "email": user_data.email,
+        "name": user_data.name,
+        "created_at": created_at.isoformat(),
+        "team_id": team_id,
+        "role": TEAM_OWNER_ROLE,
+        "plan": DEFAULT_PLAN,
+        "picture": "",
+        "password_hash": hash_password(user_data.password),
+    }
+    await db.teams.insert_one(team_payload)
+    await db.users.insert_one(user_payload)
+    user_doc = await load_user_document(user_id)
+    if not user_doc:
+        raise HTTPException(status_code=500, detail="Failed to create user")
+    access_token = create_access_token(data={"user_id": user_id})
+    return TokenResponse(access_token=access_token, user=User(**user_doc))
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
@@ -221,9 +368,11 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="This account uses Google sign-in. Please sign in with Google.")
     if not verify_password(credentials.password, user_doc.get("password_hash")):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    if isinstance(user_doc.get("created_at"), str):
-        user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
-    user = User(**{k: v for k, v in user_doc.items() if k != "password_hash"})
+    user_doc = dict(user_doc)
+    parse_datetime_field(user_doc, "created_at")
+    await ensure_team_for_user(user_doc)
+    user_doc.pop("password_hash", None)
+    user = User(**user_doc)
     access_token = create_access_token(data={"user_id": user.user_id})
     return TokenResponse(access_token=access_token, user=user)
 
@@ -307,16 +456,35 @@ async def process_google_oauth_code(code: str):
         user_doc = await db.users.find_one({"email": email}, {"_id": 0})
         if not user_doc:
             user_id = f"user_{uuid.uuid4().hex[:12]}"
+            created_at = datetime.now(timezone.utc)
+            team_id = f"team_{uuid.uuid4().hex[:12]}"
+            team_payload = {
+                "team_id": team_id,
+                "name": f"{name}'s Team" if name else "Digital Ninja Team",
+                "owner_id": user_id,
+                "plan": DEFAULT_PLAN,
+                "billing_status": "active",
+                "created_at": created_at.isoformat(),
+                "usage": {"projects": 0, "deployments": 0, "credits_used": 0},
+            }
             user_doc = {
                 "user_id": user_id,
                 "email": email,
                 "name": name,
                 "picture": picture,
-                "created_at": datetime.now(timezone.utc).isoformat()
+                "created_at": created_at.isoformat(),
+                "team_id": team_id,
+                "role": TEAM_OWNER_ROLE,
+                "plan": DEFAULT_PLAN,
             }
-            await db.users.insert_one(user_doc)
+            await db.teams.insert_one(team_payload)
+            await db.users.insert_one({**user_doc})
         else:
+            user_doc = dict(user_doc)
             user_id = user_doc["user_id"]
+        parse_datetime_field(user_doc, "created_at")
+        await ensure_team_for_user(user_doc)
+        user_doc.pop("password_hash", None)
         session_token = uuid.uuid4().hex
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
         await db.user_sessions.insert_one({
@@ -328,6 +496,141 @@ async def process_google_oauth_code(code: str):
         user = User(**user_doc)
         jwt_token = create_access_token(data={"user_id": user.user_id})
         return {"access_token": jwt_token, "user": user_doc}
+
+# ==================== ACCOUNT & TEAM ENDPOINTS ====================
+@api_router.get("/account/profile", response_model=User)
+async def get_account_profile(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@api_router.put("/account/profile", response_model=User)
+async def update_account_profile(update: ProfileUpdate, current_user: User = Depends(get_current_user)):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        await db.users.update_one({"user_id": current_user.user_id}, {"$set": update_data})
+    refreshed = await load_user_document(current_user.user_id)
+    if not refreshed:
+        raise HTTPException(status_code=404, detail="User not found after update")
+    return User(**refreshed)
+
+@api_router.post("/account/password")
+async def update_account_password(payload: PasswordUpdate, current_user: User = Depends(get_current_user)):
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not user_doc or not user_doc.get("password_hash"):
+        raise HTTPException(status_code=400, detail="Password-based login not configured for this account")
+    if not verify_password(payload.current_password, user_doc["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    new_hash = hash_password(payload.new_password)
+    await db.users.update_one({"user_id": current_user.user_id}, {"$set": {"password_hash": new_hash}})
+    return {"status": "success"}
+
+@api_router.get("/teams/current", response_model=Team)
+async def get_current_team(current_user: User = Depends(get_current_user)):
+    if not current_user.team_id:
+        raise HTTPException(status_code=404, detail="No team associated with user")
+    team_doc = await db.teams.find_one({"team_id": current_user.team_id}, {"_id": 0})
+    if not team_doc:
+        raise HTTPException(status_code=404, detail="Team not found")
+    parse_datetime_field(team_doc, "created_at")
+    team_doc.setdefault("plan", current_user.plan)
+    return Team(**team_doc)
+
+@api_router.get("/teams/members", response_model=List[TeamMember])
+async def get_team_members(current_user: User = Depends(get_current_user)):
+    if not current_user.team_id:
+        return []
+    members = await db.users.find({"team_id": current_user.team_id}, {"_id": 0, "password_hash": 0}).to_list(200)
+    results: List[TeamMember] = []
+    for member in members:
+        results.append(
+            TeamMember(
+                user_id=member["user_id"],
+                email=member.get("email", ""),
+                name=member.get("name", ""),
+                role=member.get("role", "member"),
+                picture=member.get("picture"),
+            )
+        )
+    return results
+
+@api_router.post("/teams/invite")
+async def invite_team_member(invite: TeamInvite, current_user: User = Depends(get_current_user)):
+    if current_user.role not in {"owner", "admin"}:
+        raise HTTPException(status_code=403, detail="Only owners and admins can invite members")
+    if invite.role not in TEAM_ROLES_ALLOWED:
+        raise HTTPException(status_code=400, detail="Invalid role requested")
+    token = uuid.uuid4().hex
+    now = datetime.now(timezone.utc)
+    invitation = {
+        "team_id": current_user.team_id,
+        "email": invite.email.lower(),
+        "role": invite.role,
+        "invited_by": current_user.user_id,
+        "token": token,
+        "status": "pending",
+        "created_at": now.isoformat(),
+        "expires_at": (now + timedelta(days=7)).isoformat(),
+    }
+    await db.team_invitations.insert_one(invitation)
+    return {"status": "pending", "token": token, "message": f"Invitation sent to {invite.email}"}
+
+# ==================== BILLING ENDPOINTS ====================
+@api_router.get("/billing/plans", response_model=List[BillingPlan])
+async def list_billing_plans() -> List[BillingPlan]:
+    return BILLING_PLANS
+
+@api_router.post("/billing/subscribe")
+async def subscribe_to_plan(plan_id: str, current_user: User = Depends(get_current_user)):
+    plan_id = plan_id.lower()
+    if plan_id not in BILLING_PLAN_MAP:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    if current_user.role not in BILLING_ALLOWED_ROLES:
+        raise HTTPException(status_code=403, detail="Insufficient permissions to change billing plan")
+    await db.teams.update_one({"team_id": current_user.team_id}, {"$set": {"plan": plan_id}})
+    await db.users.update_many({"team_id": current_user.team_id}, {"$set": {"plan": plan_id}})
+    event = {
+        "team_id": current_user.team_id,
+        "plan_id": plan_id,
+        "changed_by": current_user.user_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.billing_events.insert_one(event)
+    return {"status": "success", "plan_id": plan_id}
+
+@api_router.get("/billing/usage", response_model=BillingUsage)
+async def get_billing_usage(current_user: User = Depends(get_current_user)) -> BillingUsage:
+    team_doc = await db.teams.find_one({"team_id": current_user.team_id}, {"_id": 0, "usage": 1})
+    usage = team_doc.get("usage", {}) if team_doc else {}
+    return BillingUsage(**{
+        "projects": usage.get("projects", 0),
+        "deployments": usage.get("deployments", 0),
+        "credits_used": usage.get("credits_used", 0),
+    })
+
+@api_router.get("/billing/payment-method", response_model=PaymentMethod)
+async def get_payment_method(current_user: User = Depends(get_current_user)) -> PaymentMethod:
+    profile = await db.billing_profiles.find_one({"team_id": current_user.team_id}, {"_id": 0})
+    if not profile:
+        return PaymentMethod(provider="Peach Payments", status="test_mode", currency="ZAR")
+    return PaymentMethod(
+        provider=profile.get("provider", "Peach Payments"),
+        status=profile.get("status", "test_mode"),
+        currency=profile.get("currency", "ZAR"),
+        last4=profile.get("last4"),
+    )
+
+@api_router.post("/billing/payment-method")
+async def update_payment_method(method: PaymentMethod, current_user: User = Depends(get_current_user)):
+    if current_user.role not in BILLING_ALLOWED_ROLES:
+        raise HTTPException(status_code=403, detail="Insufficient permissions to update billing")
+    payload = method.model_dump()
+    payload["team_id"] = current_user.team_id
+    payload["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.billing_profiles.update_one(
+        {"team_id": current_user.team_id},
+        {"$set": payload},
+        upsert=True,
+    )
+    return {"status": "success"}
 
 # ==================== PROJECT ENDPOINTS ====================
 @api_router.get("/projects", response_model=List[Project])
@@ -685,32 +988,65 @@ async def autonomous_agent_stream(project_data: ProjectCreate, current_user: Use
     Like Replit Agent 3
     """
     async def event_generator():
-        try:
-            from autonomous_agent import AutonomousAgent
-            
-            agent = AutonomousAgent(
-                project_id=str(uuid.uuid4()),
-                openai_api_key=os.getenv("OPENAI_API_KEY")
-            )
-            
-            # Progress callback
-            async def progress_callback(update):
-                yield f"data: {json.dumps({'type': update['level'], 'message': update['message'], 'timestamp': update['timestamp']})}\n\n"
-            
-            yield f"data: {json.dumps({'type': 'info', 'message': '🤖 Autonomous Agent starting...', 'timestamp': datetime.now().isoformat()})}\n\n"
-            
-            # Run autonomous build
-            result = await agent.run_autonomous_build(
+        from autonomous_agent import AutonomousAgent
+
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if not openai_key:
+            error_payload = {
+                "type": "error",
+                "message": "Autonomous agent is not configured. Set OPENAI_API_KEY in the backend environment.",
+                "timestamp": datetime.now().isoformat()
+            }
+            yield f"data: {json.dumps(error_payload)}\n\n"
+            return
+
+        progress_queue: asyncio.Queue = asyncio.Queue()
+
+        async def progress_callback(update):
+            payload = {
+                "type": update.get("level", "info"),
+                "message": update.get("message", ""),
+                "timestamp": update.get("timestamp", datetime.now().isoformat())
+            }
+            await progress_queue.put(payload)
+
+        agent = AutonomousAgent(
+            project_id=str(uuid.uuid4()),
+            openai_api_key=openai_key
+        )
+
+        await progress_queue.put({
+            "type": "info",
+            "message": "🤖 Autonomous Agent starting...",
+            "timestamp": datetime.now().isoformat()
+        })
+
+        agent_task = asyncio.create_task(
+            agent.run_autonomous_build(
                 prompt=project_data.prompt,
-                progress_callback=lambda update: asyncio.create_task(progress_callback(update)),
+                progress_callback=progress_callback,
                 max_duration_minutes=200
             )
-            
-            if result["status"] == "success":
-                # Save project
+        )
+
+        try:
+            while True:
+                if agent_task.done() and progress_queue.empty():
+                    break
+
+                try:
+                    update = await asyncio.wait_for(progress_queue.get(), timeout=0.5)
+                except asyncio.TimeoutError:
+                    continue
+
+                yield f"data: {json.dumps(update)}\n\n"
+
+            result = await agent_task
+
+            if result.get("status") == "success":
                 now = datetime.now(timezone.utc)
                 project_id = str(uuid.uuid4())
-                
+
                 project_doc = {
                     "project_id": project_id,
                     "user_id": current_user.user_id,
@@ -729,14 +1065,35 @@ async def autonomous_agent_stream(project_data: ProjectCreate, current_user: Use
                     "updated_at": now.isoformat()
                 }
                 await db.projects.insert_one(project_doc)
-                
-                yield f"data: {json.dumps({'type': 'complete', 'project_id': project_id, 'files': result['files'], 'test_results': result['test_results']})}\n\n"
+
+                completion_payload = {
+                    "type": "complete",
+                    "project_id": project_id,
+                    "files": result["files"],
+                    "test_results": result.get("test_results", {})
+                }
+                yield f"data: {json.dumps(completion_payload)}\n\n"
             else:
-                yield f"data: {json.dumps({'type': 'error', 'message': result.get('error', 'Unknown error')})}\n\n"
-                
+                error_payload = {
+                    "type": "error",
+                    "message": result.get("error", "Unknown error occurred during autonomous build."),
+                    "timestamp": datetime.now().isoformat()
+                }
+                yield f"data: {json.dumps(error_payload)}\n\n"
+
         except Exception as e:
             logger.error(f"Autonomous agent error: {e}")
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+            error_payload = {
+                "type": "error",
+                "message": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+            yield f"data: {json.dumps(error_payload)}\n\n"
+        finally:
+            if not agent_task.done():
+                agent_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await agent_task
     
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
