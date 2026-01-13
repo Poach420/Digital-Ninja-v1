@@ -90,6 +90,7 @@ const EnhancedBuilder = () => {
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
+            let shouldStop = false;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -110,18 +111,40 @@ const EnhancedBuilder = () => {
                             }]);
 
                             if (data.type === 'complete') {
-                                setProject(data);
                                 toast.success('Autonomous build complete!');
 
-                                // Auto-create snapshot
-                                await createSnapshot('Initial autonomous build');
+                                if (data.project_id) {
+                                    try {
+                                        const projectResponse = await api.get(`/projects/${data.project_id}`);
+                                        setProject(projectResponse.data);
+                                        navigate(`/enhanced-builder/${data.project_id}`);
+                                        try {
+                                            await api.post(`/projects/${data.project_id}/snapshots`, {
+                                                message: 'Initial autonomous build'
+                                            });
+                                        } catch (snapshotError) {
+                                            console.error('Snapshot creation failed:', snapshotError);
+                                        }
+                                    } catch (projectError) {
+                                        toast.error('Project saved but failed to load details.');
+                                    }
+                                }
+
+                                shouldStop = true;
+                                break;
                             } else if (data.type === 'error') {
-                                toast.error(data.message);
+                                toast.error(data.message || 'Autonomous build failed.');
+                                shouldStop = true;
+                                break;
                             }
                         } catch (e) {
                             // Skip invalid JSON
                         }
                     }
+                }
+
+                if (shouldStop) {
+                    break;
                 }
             }
         } catch (error) {
